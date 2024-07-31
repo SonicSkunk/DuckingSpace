@@ -25,6 +25,8 @@ DuckingSpace is a faust powered audio plugin with built-in sidechaining to allow
 
 That's it, you're ready to work on the plugin.
 
+
+
 ### Plugin Usage:
 
     Load DuckingSpace in your DAW (Digital Audio Workstation) as an audio effect plugin.    

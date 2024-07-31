@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ContentProperties DeviceType="Desktop">
+  <Component type="ScriptPanel" id="PanelBG" x="-32.0" y="-19.0" width="740.0"
+             height="480.0" bgColour="4280296236" text="Background"/>
+  <Component type="ScriptSlider" id="Knob1" x="450.0" y="540.0" middlePosition="16.0"
+             stepSize="1.0" max="33.0" filmstripImage="C:\Users\Benja\Downloads\empty.png"
+             numStrips="1.0"/>
+  <Component type="ScriptPanel" id="Panel3" x="340.0" y="70.0" width="320.0"
+             height="250.0" text="PaneControls"/>
+  <Component type="ScriptPanel" id="LottiePanel" x="10.0" y="330.0" width="60.0"
+             height="60.0" tooltip="*Quack quack*"/>
+  <Component type="ScriptSlider" id="Ducking" x="50.0" y="90.0" width="230.0"
+             height="220.0" tooltip="How much the reverb ducks the orginal signal by the amount of sidechaning applied."
+             processorId="Script FX1" parameterId="Ducking" itemColour2="4213317218"/>
+  <Component type="ScriptSlider" id="DryWet" x="620.0" y="330.0" processorId="Script FX1"
+             parameterId="Dry/Wet" text="Dry/Wet" tooltip="Mixes the original signal with the reverb."
+             width="40.0" height="40.0" middlePosition="0.550000011920929"/>
+  <Component type="ScriptPanel" id="Tooltip" x="70.0" y="350.0" width="550.0"
+             height="30.0" textColour="4294967295"/>
+  <Component type="ScriptSlider" id="Knob2" x="110.0" y="150.0" text="Speed"
+             width="110.0" height="110.0" processorId="Script FX1" parameterId="SPEED"
+             tooltip="The speed at which the sidechaining kicks in. Higher values means higher attack/release."
+             min="5.0" max="90.0"/>
+  <Component type="ScriptSlider" id="Knob3" x="360.0" y="80.0" text="Decay"
+             width="80.0" height="80.0" processorId="Script FX1" parameterId="Decay"
+             tooltip="The time it takes for the reverb's tail to decay."/>
+  <Component type="ScriptSlider" id="Knob4" x="460.0" y="80.0" text="Size"
+             width="80.0" height="80.0" processorId="Script FX1" parameterId="Size"
+             tooltip="The perceived size of the virtual space" min="0.2700000107288361"
+             middlePosition="0.6000000238418579"/>
+  <Component type="ScriptSlider" id="Knob5" x="560.0" y="80.0" text="Mod"
+             width="80.0" height="80.0" processorId="Script FX1" parameterId="Modulation"
+             tooltip="The amount of pitch modulation applied to the reverb"/>
+  <Component type="ScriptSlider" id="Knob6" x="360.0" y="220.0" text="Damping"
+             width="80.0" height="80.0" isMetaParameter="1" processorId="Script FX1"
+             parameterId="Damping" tooltip="The amount of damping in the virtual space."
+             max="0.75" middlePosition="0.375"/>
+  <Component type="ScriptSlider" id="Knob7" x="460.0" y="220.0" text="Color"
+             width="80.0" height="80.0" processorId="Script FX1" parameterId="Diffusion"
+             tooltip="How much the sound is getting diffused in the virtual space."/>
+  <Component type="ScriptSlider" id="Knob8" x="560.0" y="220.0" text="Color"
+             width="80.0" height="80.0" processorId="Script FX1" parameterId="Color"
+             tooltip="An equalizer to brighten or darken the sound of the reverb. Middle position is neutral."/>
+  <Component type="ScriptPanel" id="Panel1" x="10.0" y="50.0" width="280.0"
+             height="20.0" bgColour="4127195135"/>
+  <Component type="ScriptLabel" id="LabelDucking" x="100.0" y="280.0" text="DUCKING"
+             fontSize="30.0" editable="0" width="130.0" height="30.0" fontName="Default"/>
+  <Component type="ScriptLabel" id="LabelSpeed" x="100.0" y="240.0" text="SPEED"
+             editable="0"/>
+  <Component type="ScriptLabel" id="LabelDecay" x="370.0" y="150.0" text="Decay"
+             width="60.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelSize" x="470.0" y="150.0" text="Size"
+             width="60.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelMod" x="570.0" y="150.0" text="Modulation"
+             width="60.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelDamping" x="370.0" y="290.0" text="Damping"
+             width="60.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelDiffusion" x="470.0" y="290.0" text="Diffusion"
+             width="60.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelModFreq" x="550.0" y="290.0" text="Color"
+             width="100.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelDryWet" x="610.0" y="370.0" text="Dry/Wet"
+             width="60.0" height="20.0" editable="0"/>
+  <Component type="ScriptLabel" id="LabelTitle" x="10.0" y="0.0" fontName="Duck"
+             text="DuckingSpace" fontSize="50.0" width="280.0" height="60.0"
+             textColour="4294951168" tooltip="Opens a browser to visit the website."
+             editable="0"/>
+  <Component type="ScriptButton" id="Button1" x="10.0" y="0.0" text="ButtonURL"
+             saveInPreset="0" width="280.0" height="60.0" filmstripImage="{PROJECT_FOLDER}empty.png"
+             tooltip="Opens a browser to visit the website."/>
+</ContentProperties>

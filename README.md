@@ -22,7 +22,8 @@ DuckingSpace is a faust powered audio plugin with built-in sidechaining to allow
         Open HISE
         Navigate to File -> Open Project Folder
         Select the DuckingSpace folder you just cloned
-        That's it, you're ready to work on the plugin.
+
+That's it, you're ready to work on the plugin.
 
 Plugin Usage:
 

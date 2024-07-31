@@ -1,7 +1,8 @@
 # DuckingSpace
 
 ## Description
-DuckingSpace is a faust powered audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
+DuckingSpace is a reverb audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
+For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
 
 ## Setting up the dev environment
 

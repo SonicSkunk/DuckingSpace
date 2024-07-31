@@ -28,7 +28,7 @@ That's it, you're ready to work on the plugin.
 Plugin Usage:
 
     Load DuckingSpace in your DAW (Digital Audio Workstation) as an audio effect plugin.    
-    Route the input signal (e.g., vocals, drums) into DuckingSpace.
+    Route the input signal (e.g., vocals, lead synth) into DuckingSpace.
     Adjust the ducking parameters to achieve a cleaner mix with the reverb and delay tails ducked dynamically.
     
     The plugin has the following parameters you can control:

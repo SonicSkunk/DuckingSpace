@@ -11,7 +11,7 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin but AU sup
         Make sure you have a faust enabled version which you have to compile yourself. Always use the develop branch and the latest version.
 - [FAUST](https://github.com/grame-cncm/faust)
         necessary for the reverb algorithm. (There is a compiled dll file included that you can use as a hardcoded fx scriptnode but then you won't be able to edit the algorithm.
-        If you want to edit the faust code you will have to compile a dll file yourself before you can compile the plugin.
+        If you want to edit the faust code you will have to compile a dll file yourself when you're done before you can compile the eventual plugin.
 - Basic understanding of how to use HISE/Scriptnodes
 
 ### Steps

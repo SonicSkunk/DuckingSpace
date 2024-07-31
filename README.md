@@ -52,7 +52,8 @@ That's it, you're ready to work on the plugin.
 
 
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the LICENSE file for details.
-Acknowledgments
+
+###Acknowledgments
 
     HISE - The framework used to develop this plugin
     FAUST - For the reverb algorithm.

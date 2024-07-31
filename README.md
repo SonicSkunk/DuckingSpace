@@ -3,7 +3,7 @@
 ## Description
 DuckingSpace is a faust powered audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
 
-## Installation
+## Setting up the developer environment
 
 ### Prerequisites
 - [HISE](https://github.com/christophhart/HISE/tree/develop)
@@ -25,7 +25,7 @@ DuckingSpace is a faust powered audio plugin with built-in sidechaining to allow
 
 That's it, you're ready to work on the plugin.
 
-Plugin Usage:
+### Plugin Usage:
 
     Load DuckingSpace in your DAW (Digital Audio Workstation) as an audio effect plugin.    
     Route the input signal (e.g., vocals, lead synth) into DuckingSpace.

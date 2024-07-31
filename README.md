@@ -2,7 +2,7 @@
 
 ## Description
 DuckingSpace is a reverb audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
-For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
+For the moment DuckingSpace is only available as a 64-bit VST3 plugin but AU support is on the planning.
 
 ## Setting up the dev environment
 
@@ -30,9 +30,9 @@ That's it, you're ready to work on the plugin.
 
 ### Plugin Usage:
 
-    Load DuckingSpace in your DAW (Digital Audio Workstation) as an audio effect plugin.    
+    Load DuckingSpace in your DAW as an audio effect plugin.    
     Route the input signal (e.g., vocals, lead synth) into DuckingSpace.
-    Adjust the ducking parameters to achieve a cleaner mix with the reverb ducking the original signal.
+    Adjust the ducking parameter to achieve a cleaner mix with the reverb ducking the original signal.
     
     The plugin has the following parameters you can control:
         Ducking: Sets the amount of sidechaining applied. Make sure you have the right input levels for maximum effect.

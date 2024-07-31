@@ -31,7 +31,7 @@ That's it, you're ready to work on the plugin.
 
     Load DuckingSpace in your DAW (Digital Audio Workstation) as an audio effect plugin.    
     Route the input signal (e.g., vocals, lead synth) into DuckingSpace.
-    Adjust the ducking parameters to achieve a cleaner mix with the reverb and delay tails ducked dynamically.
+    Adjust the ducking parameters to achieve a cleaner mix with the reverb ducking the original signal.
     
     The plugin has the following parameters you can control:
         Ducking: Sets the amount of sidechaining applied. Make sure you have the right input levels for maximum effect.

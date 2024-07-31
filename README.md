@@ -35,11 +35,11 @@ That's it, you're ready to work on the plugin.
     Adjust the ducking parameter to achieve a cleaner mix with the reverb ducking the original signal.
     
     The plugin has the following parameters you can control:
-        Ducking: Sets the amount of sidechaining applied. Make sure you have the right input levels for maximum effect.
+        Ducking: Sets the amount of sidechaining applied. Make sure you have decent input levels.
         Speed: Controls the attack and release time of the compressor.
         Decay: Sets the length of the reverb's tail.
         Size: The perceived size of the virtual space.
-        Modulation: the amount of pitch modulation applied to the reverb
+        Modulation: the amount of pitch modulation applied to the reverb.
         Damping: The amount of damping in the virtual space
         Diffusion: How much the sound gets diffused in the virtual space
         Color: A compressor to brighter or darken the sound. Middle position is neutral.
@@ -56,6 +56,6 @@ This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the LICENSE 
 
 ### Acknowledgments
 
-    HISE - The framework used to develop this plugin
+    HISE - The amazing framework used to develop this plugin
     FAUST - For the reverb algorithm.
     JUCE - The platform for building cross-platform audio applications

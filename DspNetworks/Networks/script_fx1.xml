@@ -167,14 +167,14 @@
                       </Node>
                     </Nodes>
                   </Node>
-                  <Node ID="faustverbscript" FactoryPath="project.faustverbscript" Bypassed="0">
+                  <Node ID="faustverbscript1" FactoryPath="project.faustverbscript" Bypassed="0">
                     <Parameters>
-                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Decay" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Size" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Modulation" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" ID="ModFrequency" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Damping" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Diffusion" Automated="1"/>
+                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Decay" Value="1.0"/>
+                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Size" Value="1.0"/>
+                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Modulation" Value="1.0"/>
+                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Mod Frequency" Value="1.0"/>
+                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Damping" Value="1.0"/>
+                      <Parameter MinValue="0.0" MaxValue="1.0" ID="Diffusion" Value="1.0"/>
                     </Parameters>
                   </Node>
                   <Node ID="gain" FactoryPath="core.gain" Bypassed="0">
@@ -217,29 +217,19 @@
         </Connections>
       </Parameter>
       <Parameter ID="Damping" MinValue="0.0" MaxValue="1.0" Value="1.0">
-        <Connections>
-          <Connection NodeId="faustverbscript" ParameterId="Damping"/>
-        </Connections>
+        <Connections/>
       </Parameter>
       <Parameter ID="Decay" MinValue="0.0" MaxValue="1.0" Value="0.3597198486328125">
-        <Connections>
-          <Connection NodeId="faustverbscript" ParameterId="Decay"/>
-        </Connections>
+        <Connections/>
       </Parameter>
       <Parameter ID="Size" MinValue="0.0" MaxValue="1.0" Value="0.272">
-        <Connections>
-          <Connection NodeId="faustverbscript" ParameterId="Size"/>
-        </Connections>
+        <Connections/>
       </Parameter>
       <Parameter ID="Modulation" MinValue="0.0" MaxValue="1.0" Value="1.0">
-        <Connections>
-          <Connection NodeId="faustverbscript" ParameterId="Modulation"/>
-        </Connections>
+        <Connections/>
       </Parameter>
       <Parameter ID="Mod Freq" MinValue="0.0" MaxValue="1.0" Value="1.0">
-        <Connections>
-          <Connection NodeId="faustverbscript" ParameterId="ModFrequency"/>
-        </Connections>
+        <Connections/>
       </Parameter>
       <Parameter ID="Color" MinValue="0.0" MaxValue="1.0" Value="0.6931798706054688">
         <Connections>
@@ -247,9 +237,7 @@
         </Connections>
       </Parameter>
       <Parameter ID="Diffusion" MinValue="0.0" MaxValue="1.0" Value="1.0">
-        <Connections>
-          <Connection NodeId="faustverbscript" ParameterId="Diffusion"/>
-        </Connections>
+        <Connections/>
       </Parameter>
     </Parameters>
   </Node>

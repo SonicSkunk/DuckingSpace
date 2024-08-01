@@ -4,8 +4,7 @@
 DuckingSpace is a reverb audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
 For the moment DuckingSpace is only available as a 64-bit VST3 plugin but AU support is on the planning.
 
-## Setting up the dev environment
-
+## Setting up the workspace
 ### Prerequisites
 - [HISE](https://github.com/christophhart/HISE/tree/develop)
         Make sure you have a faust enabled version which you have to compile yourself. Always use the develop branch and the latest version.
@@ -19,7 +18,8 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin but AU sup
    ```sh
    git clone https://github.com/SonicSkunk/DuckingSpace.git
 
-    Open HISE and load the project:
+2. Open HISE and load the project:
+   ```sh
         Open HISE
         Navigate to File -> Open Project Folder
         Select the DuckingSpace folder you just cloned

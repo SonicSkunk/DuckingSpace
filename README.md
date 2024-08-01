@@ -23,9 +23,7 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
         Navigate to File -> Open Project Folder
         Select the DuckingSpace folder you just cloned
 
-That's it, you're ready to work on the plugin.
-
-
+That's it, have fun!
 
 ### Plugin Usage:
 

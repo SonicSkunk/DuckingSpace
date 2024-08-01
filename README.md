@@ -17,7 +17,7 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
    ```sh
    git clone https://github.com/SonicSkunk/DuckingSpace.git
 
-2. Open HISE and load the project:
+2. Loading the project:
    ```sh
         Open HISE
         Navigate to File -> Open Project Folder

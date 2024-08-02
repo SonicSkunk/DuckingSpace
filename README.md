@@ -3,7 +3,7 @@
 ## Description
 DuckingSpace is a reverb audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
 For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
-If you're looking to download the VST plugin itself, please visit the downloads section at the [website](https://www.sonicskunk.com/#Downloads)
+If you're looking to download the VST plugin itself, please visit the downloads section on the [website](https://www.sonicskunk.com/#Downloads)
 
 ## Setting up the workspace
 ### Prerequisites

@@ -9,7 +9,7 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
 - [HISE](https://github.com/christophhart/HISE/tree/develop)
         Make sure you have a faust enabled version which you have to compile yourself. Always use the develop branch and the latest version.
 - [FAUST](https://github.com/grame-cncm/faust)
-        necessary for the reverb algorithm. (There is a compiled dll file included that you can use as a hardcoded fx scriptnode but then you won't be able to edit the algorithm)
+        Is necessary for the reverb algorithm. (There is a compiled dll file included that you can use as a hardcoded fx scriptnode but then you won't be able to edit the algorithm)
 - Basic understanding of how to use HISE/Scriptnodes
 
 ### Steps
@@ -17,7 +17,7 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin.
    ```sh
    git clone https://github.com/SonicSkunk/DuckingSpace.git
 
-2. Loading the project:
+2. Load the project:
    ```sh
         Open HISE
         Navigate to File -> Open Project Folder

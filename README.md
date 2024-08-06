@@ -1,13 +1,18 @@
 # DuckingSpace
 
-## Description
-DuckingSpace is a reverb audio plugin with built-in sidechaining to allow the reverb to duck the original signal.
-For the moment DuckingSpace is only available as a 64-bit VST3 plugin for Windows.
-
 ### If you're looking to download the VST plugin itself, please visit the downloads section on the [website](https://www.sonicskunk.com/#Downloads) for a direct download.
 
+## Description
+DuckingSpace is a reverb audio plugin with built-in sidechaining.
+This allows the reverb to dynamically duck in response to the original signal, ensuring that your primary audio-signal remains clear and prominent while still benefiting from the depth and ambience that reverb provides.
+It’s a great tool for achieving a massive yet clear sound in your mix.
 
-# Setting up the developer workspace
+For the moment DuckingSpace is only available as a 64-bit VST3 plugin for Windows. Mac support (hopefully) coming soon.
+
+
+## How to edit the plugin:
+
+### Setting up the developer workspace
 ### Prerequisites
 - [HISE](https://github.com/christophhart/HISE/tree/develop)
         Make sure you have a faust enabled version which you have to compile yourself. Always use the develop branch and the latest version.
@@ -27,29 +32,6 @@ For the moment DuckingSpace is only available as a 64-bit VST3 plugin for Window
         Select the DuckingSpace folder you just cloned
 
 That's it, have fun!
-
-### Plugin Usage:
-
-    Load DuckingSpace in your DAW as an audio effect plugin.    
-    Route the input signal (e.g., vocals, lead synth) into DuckingSpace.
-    Adjust the ducking parameter to achieve a cleaner mix with the reverb ducking the original signal.
-    
-    The plugin has the following parameters you can control:
-        Ducking: Sets the amount of sidechaining applied. Make sure you have decent input levels.
-        Speed: Controls the attack and release time of the compressor.
-        Decay: Sets the length of the reverb's tail.
-        Size: The perceived size of the virtual space.
-        Modulation: the amount of pitch modulation applied to the reverb.
-        Damping: The amount of damping in the virtual space
-        Diffusion: How much the sound gets diffused in the virtual space
-        Color: A compressor to brighter or darken the sound. Middle position is neutral.
-        Dry/Wet: The mix of the dry signal and the reverb.
-
-    Gain staging is important to achieve the best results:
-
-    A signal that is too low will not trigger much ducking effect even when the settings are turned up.
-    A signal that is too loud may induce ducking even when the effect is turned all the way down.
-
 
 
 This project is licensed under the GNU GENERAL PUBLIC LICENSE - see the LICENSE file for details.

@@ -7,7 +7,6 @@ DuckingSpace is a reverb audio plugin with built-in sidechaining.
 This allows the reverb to dynamically duck in response to the original signal, ensuring that your primary audio-signal remains clear and prominent while still benefiting from the depth and ambience that reverb provides.
 It’s a great tool for achieving a massive yet clear sound in your mix.
 
-For the moment DuckingSpace is only available as a 64-bit VST3 plugin for Windows. Mac support (hopefully) coming soon.
 
 
 ## How to edit the plugin:

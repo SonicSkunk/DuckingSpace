@@ -9,9 +9,8 @@ It’s a great tool for achieving a massive yet clear sound in your mix.
 
 
 
-## How to edit the plugin:
 
-### Setting up the developer workspace
+## Setting up the developer workspace
 ### Prerequisites
 - [HISE](https://github.com/christophhart/HISE/tree/develop)
         Make sure you have a faust enabled version which you have to compile yourself. Always use the develop branch and the latest version.

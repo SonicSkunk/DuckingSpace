@@ -4,7 +4,7 @@
   <Name value="DuckingSpace"/>
   <Version value="1.1.0"/>
   <Description value="HQ Reverb plugin with built-in sidechaining."/>
-  <BundleIdentifier value="com.myCompany.product"/>
+  <BundleIdentifier value="com.sonicskunk.duckingspace"/>
   <PluginCode value="Abcd"/>
   <EmbedAudioFiles value="Yes"/>
   <EmbedImageFiles value="Yes"/>
@@ -12,8 +12,8 @@
   <AdditionalDspLibraries value=""/>
   <OSXStaticLibs value=""/>
   <WindowsStaticLibFolder value=""/>
-  <ExtraDefinitionsWindows value=""/>
-  <ExtraDefinitionsOSX value=""/>
+  <ExtraDefinitionsWindows value="JUCE_VST3_CAN_REPLACE_VST2=1"/>
+  <ExtraDefinitionsOSX value="JUCE_VST3_CAN_REPLACE_VST2=1"/>
   <ExtraDefinitionsIOS value=""/>
   <ExtraDefinitionsLinux value=""/>
   <ExtraDefinitionsNetworkDll value=""/>

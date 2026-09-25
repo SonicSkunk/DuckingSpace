@@ -9,11 +9,11 @@
 
 // Include third party header files ----------------
 
+#include "VerbHall.h"
 #include "VerbScript.h"
 
 // Include compiled network files ------------------
 
-#include "faustverbscript.h"
 #include "script_fx1_networkdata.h"
 
 #if (defined (_WIN32) || defined (_WIN64))

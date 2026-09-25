@@ -1,0 +1,9 @@
+{
+  "VerbHall": [
+    "IsPolyphonic"
+  ],
+  "VerbScript": [
+    "IsPolyphonic",
+    "AllowPolyphonic"
+  ]
+}

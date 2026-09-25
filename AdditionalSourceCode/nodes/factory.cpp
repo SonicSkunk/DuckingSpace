@@ -28,16 +28,58 @@ struct Factory: public scriptnode::dll::StaticLibraryHostFactory
 		// Node registrations ----------------------------------------------------------------------
 		
 		registerPolyNode<project::VerbScript<1>, project::VerbScript<NUM_POLYPHONIC_VOICES>>();
-		registerPolyNode<project::faustverbscript<1>, wrap::illegal_poly<project::faustverbscript<1>>>();
+		registerPolyNode<project::VerbHall<1>, scriptnode::wrap::illegal_poly<project::VerbHall<1>>>();
 		registerDataNode<project::script_fx1_networkdata>();
 	}
 };
+
+#if HISE_INCLUDE_RT_NEURAL
+
+struct NeuralFactory: public hise::NeuralNetwork::Factory
+{
+	NeuralFactory()
+	{
+	}
+	void* cloneModel(void* model) const
+	{
+		if(auto m = static_cast<hise::NeuralNetwork::ModelBase*>(model))
+		{
+			return m->clone();
+		}
+		return nullptr;
+	}
+	void destroyModel(void* model) const
+	{
+		delete static_cast<hise::NeuralNetwork::ModelBase*>(model);
+	}
+	void resetModel(void* model) const
+	{
+		if(auto m = static_cast<hise::NeuralNetwork::ModelBase*>(model))
+		{
+			m->reset();
+		}
+	}
+	void processModel(void* model, const float* input, float* output) const
+	{
+		if(auto m = static_cast<hise::NeuralNetwork::ModelBase*>(model))
+		{
+			m->process(input, output);
+		}
+	}
+};
+#endif
 }
 
 scriptnode::dll::FactoryBase* scriptnode::DspNetwork::createStaticFactory()
 {
 	return new project::Factory();
 }
+
+#if HISE_INCLUDE_RT_NEURAL
+void scriptnode::DspNetwork::registerStaticNeuralNetworks(hise::NeuralNetwork::Factory* f)
+{
+}
+#endif
 
 #if !JUCE_WINDOWS
 #pragma clang diagnostic pop

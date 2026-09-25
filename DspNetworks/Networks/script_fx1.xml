@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<Network ID="script_fx1" AllowCompilation="1" Version="0.0.0">
+<Network ID="script_fx1" Version="0.0.0">
   <Node FactoryPath="container.chain" ID="script_fx1" Bypassed="0" ShowParameters="1"
         Name="script_fx1">
     <Nodes>
       <Node ID="xfader" FactoryPath="control.xfader" Bypassed="0" Name="xfader">
         <Properties>
           <Property ID="NumParameters" Value="2"/>
-          <Property ID="Mode" Value="RMS"/>
+          <Property ID="Mode" Value="Cosine Half"/>
         </Properties>
         <SwitchTargets>
           <SwitchTarget>
@@ -27,8 +27,8 @@
       </Node>
       <Node ID="inputGain" FactoryPath="core.gain" Bypassed="0" Name="inputGain">
         <Parameters>
-          <Parameter MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161" ID="Gain"
-                     Automated="1"/>
+          <Parameter MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161"
+                     ID="Gain" Automated="1"/>
           <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
                      SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
           <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
@@ -45,8 +45,8 @@
                 <Nodes>
                   <Node ID="sensGain" FactoryPath="core.gain" Bypassed="0" Name="sensGain">
                     <Parameters>
-                      <Parameter MinValue="0.0" MaxValue="24.0" StepSize="0.1000000014901161" ID="Gain"
-                                 Automated="1"/>
+                      <Parameter MinValue="0.0" MaxValue="24.0" StepSize="0.1000000014901161"
+                                 ID="Gain" Automated="1"/>
                       <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
                                  SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
                       <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
@@ -88,7 +88,7 @@
                   <Node ID="gain1" FactoryPath="core.gain" Bypassed="0" Name="gain1">
                     <Parameters>
                       <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
-                                 SkewFactor="5.422270774841309" ID="Gain" Automated="1"/>
+                                 SkewFactor="11.51292546497023" ID="Gain" Automated="1"/>
                       <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
                                  SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
                       <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
@@ -101,16 +101,6 @@
               <Node ID="VERB CHANNEL" FactoryPath="container.chain" Bypassed="0"
                     Name="VERB CHANNEL">
                 <Nodes>
-                  <Node ID="gain2" FactoryPath="core.gain" Bypassed="0" Name="gain2">
-                    <Parameters>
-                      <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
-                                 SkewFactor="5.422270774841309" ID="Gain" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
-                                 SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
-                      <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
-                                 SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
-                    </Parameters>
-                  </Node>
                   <Node ID="xfader1" FactoryPath="control.xfader" Bypassed="0" Name="xfader1">
                     <Properties>
                       <Property ID="NumParameters" Value="2"/>
@@ -194,30 +184,40 @@
                       </Node>
                     </Nodes>
                   </Node>
-                  <Node ID="faust" FactoryPath="core.faust" Bypassed="0" Name="faust">
-                    <Properties>
-                      <Property ID="ClassId" Value="VerbScript"/>
-                      <Property ID="NumParameters" Value="0"/>
-                    </Properties>
+                  <Node ID="engine" FactoryPath="container.branch" Bypassed="0" Name="engine">
+                    <Nodes>
+                      <Node ID="faust" FactoryPath="project.VerbScript" Bypassed="0" Name="faust">
+                        <Parameters>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Damping" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Decay" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Diffusion" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Modulation" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Size" Automated="1"/>
+                        </Parameters>
+                      </Node>
+                      <Node ID="hall" FactoryPath="project.VerbHall" Bypassed="0" Name="hall">
+                        <Parameters>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Damping" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Decay" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Diffusion" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Modulation" Automated="1"/>
+                          <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.001000000047497451"
+                                     ID="Size" Automated="1"/>
+                        </Parameters>
+                      </Node>
+                    </Nodes>
                     <Parameters>
-                      <Parameter MinValue="0.0" MaxValue="0.9999999776482582" StepSize="0.009999999776482582"
-                                 ID="Damping" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="0.9999999776482582" StepSize="0.009999999776482582"
-                                 ID="Diffusion" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.009999999776482582"
-                                 ID="HF Gain" Value="1.0"/>
-                      <Parameter MinValue="0.0" MaxValue="1.0" StepSize="0.009999999776482582"
-                                 ID="LF Gain" Value="1.0"/>
-                      <Parameter MinValue="0.0" MaxValue="0.9999999776482582" StepSize="0.009999999776482582"
-                                 ID="Mod Depth" Automated="1"/>
-                      <Parameter MinValue="0.0" MaxValue="10.0" StepSize="0.009999999776482582"
-                                 ID="Mod Frequency" Value="0.1000000014901161"/>
-                      <Parameter MinValue="0.1000000014901161" MaxValue="12.0" StepSize="0.1000000014901161"
-                                 ID="ReverbTime" Automated="1"/>
-                      <Parameter MinValue="0.4999999888241291" MaxValue="4.999999888241291" StepSize="0.009999999776482582"
-                                 ID="Size" Automated="1"/>
+                      <Parameter MinValue="0.0" MaxValue="1" StepSize="1.0" ID="Index" Automated="1"/>
                     </Parameters>
-                    <SwitchTargets/>
                   </Node>
                   <Node ID="gain" FactoryPath="core.gain" Bypassed="0" Name="gain">
                     <Parameters>
@@ -225,6 +225,16 @@
                                  SkewFactor="5.422270774841309" ID="Gain" Automated="1"/>
                       <Parameter MinValue="0.0" MaxValue="250.0" StepSize="0.1000000014901161"
                                  SkewFactor="0.4306765580733931" ID="Smoothing" Automated="1"/>
+                      <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
+                                 SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
+                    </Parameters>
+                  </Node>
+                  <Node ID="gain2" FactoryPath="core.gain" Bypassed="0" Name="gain2">
+                    <Parameters>
+                      <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
+                                 SkewFactor="11.51292546497023" ID="Gain" Automated="1"/>
+                      <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
+                                 SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
                       <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
                                  SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
                     </Parameters>
@@ -240,8 +250,8 @@
       </Node>
       <Node ID="outputGain" FactoryPath="core.gain" Bypassed="0" Name="outputGain">
         <Parameters>
-          <Parameter MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161" ID="Gain"
-                     Automated="1"/>
+          <Parameter MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161"
+                     ID="Gain" Automated="1"/>
           <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
                      SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
           <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
@@ -250,65 +260,77 @@
       </Node>
     </Nodes>
     <Parameters>
-      <Parameter ID="Ducking" MinValue="0.0" MaxValue="1.0" Value="0.0">
+      <Parameter ID="Ducking" MinValue="0.0" MaxValue="1.0" Value="0.8700000047683716"
+                 DefaultValue="0.0">
         <Connections>
           <Connection NodeId="comp" ParameterId="Threshhold"/>
         </Connections>
       </Parameter>
       <Parameter ID="SPEED" MinValue="0.0" MaxValue="250.0" StepSize="0.1000000014901161"
-                 SkewFactor="0.4306765496730804" Value="92.60000137984751">
+                 SkewFactor="0.4306765496730804" Value="65.50000097602604" DefaultValue="92.60000137984751">
         <Connections>
           <Connection NodeId="comp" ParameterId="Attack"/>
           <Connection NodeId="comp" ParameterId="Release"/>
           <Connection NodeId="gain" ParameterId="Smoothing"/>
         </Connections>
       </Parameter>
-      <Parameter ID="Dry/Wet" MinValue="0.0" MaxValue="1.0" Value="0.6719100036621093">
+      <Parameter ID="Dry/Wet" MinValue="0.0" MaxValue="1.0" Value="0.4699999988079071"
+                 DefaultValue="0.6719100036621093">
         <Connections>
           <Connection NodeId="xfader" ParameterId="Value"/>
         </Connections>
       </Parameter>
-      <Parameter ID="Damping" MinValue="0.0" MaxValue="1.0" Value="1.0">
+      <Parameter ID="Damping" MinValue="0.0" MaxValue="1.0" Value="0.300000011920929"
+                 DefaultValue="1.0">
         <Connections>
           <Connection NodeId="faust" ParameterId="Damping"/>
+          <Connection NodeId="hall" ParameterId="Damping"/>
         </Connections>
       </Parameter>
-      <Parameter ID="Decay" MinValue="0.0" MaxValue="1.0" Value="0.3597198486328125">
+      <Parameter ID="Decay" MinValue="0.0" MaxValue="1.0" Value="0.5" DefaultValue="0.3597198486328125">
         <Connections>
-          <Connection NodeId="faust" ParameterId="ReverbTime"/>
+          <Connection NodeId="faust" ParameterId="Decay"/>
+          <Connection NodeId="hall" ParameterId="Decay"/>
         </Connections>
       </Parameter>
-      <Parameter ID="Size" MinValue="0.0" MaxValue="1.0" Value="0.272">
+      <Parameter ID="Size" MinValue="0.0" MaxValue="1.0" Value="0.320000022649765"
+                 DefaultValue="0.272">
         <Connections>
           <Connection NodeId="faust" ParameterId="Size"/>
+          <Connection NodeId="hall" ParameterId="Size"/>
         </Connections>
       </Parameter>
-      <Parameter ID="Modulation" MinValue="0.0" MaxValue="1.0" Value="1.0">
+      <Parameter ID="Modulation" MinValue="0.0" MaxValue="1.0" Value="0.3199999928474426"
+                 DefaultValue="1.0">
         <Connections>
-          <Connection NodeId="faust" ParameterId="Mod Depth"/>
+          <Connection NodeId="faust" ParameterId="Modulation"/>
+          <Connection NodeId="hall" ParameterId="Modulation"/>
         </Connections>
       </Parameter>
       <Parameter ID="Mod Freq" MinValue="0.0" MaxValue="1.0" Value="1.0">
         <Connections/>
       </Parameter>
-      <Parameter ID="Color" MinValue="0.0" MaxValue="1.0" Value="0.6931798706054688">
+      <Parameter ID="Color" MinValue="0.0" MaxValue="1.0" Value="0.6200000047683716"
+                 DefaultValue="0.6931798706054688">
         <Connections>
           <Connection NodeId="xfader1" ParameterId="Value"/>
         </Connections>
       </Parameter>
-      <Parameter ID="Diffusion" MinValue="0.0" MaxValue="1.0" Value="1.0">
+      <Parameter ID="Diffusion" MinValue="0.0" MaxValue="1.0" Value="0.8399999737739563"
+                 DefaultValue="1.0">
         <Connections>
           <Connection NodeId="faust" ParameterId="Diffusion"/>
+          <Connection NodeId="hall" ParameterId="Diffusion"/>
         </Connections>
       </Parameter>
       <Parameter ID="Input" MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161"
-                 Value="0.0">
+                 Value="3.576278650996301e-7" DefaultValue="0.0">
         <Connections>
           <Connection NodeId="inputGain" ParameterId="Gain"/>
         </Connections>
       </Parameter>
       <Parameter ID="Output" MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161"
-                 Value="0.0">
+                 Value="3.576278650996301e-7" DefaultValue="0.0">
         <Connections>
           <Connection NodeId="outputGain" ParameterId="Gain"/>
         </Connections>
@@ -317,6 +339,11 @@
                  Value="0.0">
         <Connections>
           <Connection NodeId="sensGain" ParameterId="Gain"/>
+        </Connections>
+      </Parameter>
+      <Parameter ID="Mode" MinValue="0.0" MaxValue="1.0" StepSize="1.0" Value="1.0">
+        <Connections>
+          <Connection NodeId="engine" ParameterId="Index"/>
         </Connections>
       </Parameter>
     </Parameters>

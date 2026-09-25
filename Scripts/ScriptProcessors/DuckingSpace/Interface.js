@@ -107,12 +107,26 @@ inline function lookPercent(v)
 	return Math.round(v * 100.0) + "%";
 }
 
+const var ModePanel = Content.getComponent("ModePanel");
+const var DecayKnob = Content.getComponent("Knob3");
+
+// real decay time in seconds; CLASSIC cannot go below 1.7 s
+inline function lookDecaySeconds(v)
+{
+	local s = 0.8 + 11.2 * Math.pow(v, 2.353);
+
+	if (ModePanel.getValue() < 0.5)
+		s = Math.max(1.7, s);
+
+	return s;
+}
+
 inline function lookValueText(id, v)
 {
 	local c = Math.round((v - 0.5) * 200.0);
 
 	if (id == "Knob3")
-		return Engine.doubleToString(0.1 + v * 11.9, 1) + "s";
+		return Engine.doubleToString(lookDecaySeconds(v), 1) + "s";
 
 	if (id == "Knob8")
 		return c > 0 ? "+" + c : "" + c;
@@ -336,6 +350,10 @@ GRMeter.setPaintRoutine(function(g)
 
 GRMeter.setTimerCallback(function()
 {
+	// getReadBuffer() is not safe while the buffer is missing, createPath() is
+	if (duckBuffer.createPath([0, 0, 10, 10], [0.0, 1.0, 0, -1], 0.0).getBounds(1.0)[2] <= 0.0)
+		return;
+
 	var rb = duckBuffer.getReadBuffer();
 	var n = rb.length;
 	var peak = 0.0;
@@ -354,6 +372,82 @@ GRMeter.setTimerCallback(function()
 });
 
 GRMeter.startTimer(40);
+
+// ---- Reverb type -------------------------------------------------------------
+const var MODE_TEXT = ["CLASSIC", "HALL"];
+const var MODE_X = [0, 84];
+const var MODE_W = [78, 62];
+
+ModePanel.data.hover = -1;
+ModePanel.data.lastMode = -1;
+
+inline function modeIndexAt(x, y)
+{
+	if (y < 0 || y > 22)
+		return -1;
+
+	if (x >= MODE_X[0] && x < MODE_X[0] + MODE_W[0])
+		return 0;
+
+	if (x >= MODE_X[1] && x < MODE_X[1] + MODE_W[1])
+		return 1;
+
+	return -1;
+}
+
+ModePanel.setPaintRoutine(function(g)
+{
+	var current = Math.round(this.getValue());
+
+	if (current != this.data.lastMode)
+	{
+		this.data.lastMode = current;
+		DecayKnob.sendRepaintMessage();
+	}
+
+	for (i = 0; i < 2; i++)
+	{
+		var area = [MODE_X[i], 0, MODE_W[i], 22];
+		var on = current == i;
+
+		if (on)
+		{
+			var pill = Content.createPath();
+			pill.addRoundedRectangle(area, 11);
+			g.drawDropShadowFromPath(pill, area, 0x592EFFE9, 12, [0, 0]);
+			g.setColour(0x142EFFE9);
+			g.fillRoundedRectangle(area, 11);
+			g.setColour(C_CYAN);
+			g.drawRoundedRectangle([area[0] + 0.5, 0.5, MODE_W[i] - 1, 21], 10.5, 1);
+		}
+		else
+		{
+			g.setColour(0x1FFFFFFF);
+			g.drawRoundedRectangle([area[0] + 0.5, 0.5, MODE_W[i] - 1, 21], 10.5, 1);
+		}
+
+		var c = on ? C_CYAN : (this.data.hover == i ? C_LABEL_HI : C_LABEL);
+		lookText(g, MODE_TEXT[i], "SansSemi", 13.5, 0.178, c, [area[0], 4.25, MODE_W[i], 13.5], "centred");
+	}
+});
+
+ModePanel.setMouseCallback(function(event)
+{
+	var i = modeIndexAt(event.x, event.y);
+	var h = event.hover ? i : -1;
+
+	if (event.clicked && i >= 0 && i != Math.round(this.getValue()))
+	{
+		this.setValue(i);
+		this.changed();
+	}
+
+	if (h != this.data.hover)
+	{
+		this.data.hover = h;
+		this.repaint();
+	}
+});
 
 // ---- Zoom ------------------------------------------------------------------
 const var ZoomPanel = Content.getComponent("ZoomPanel");

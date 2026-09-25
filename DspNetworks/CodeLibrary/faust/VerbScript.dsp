@@ -1,35 +1,23 @@
-// Faust Source File: VerbScript
-// Created with HISE on 2024-07-21
+// DuckingSpace reverb: CLASSIC
 import("stdfaust.lib");
 
-// approximate reverberation time in seconds ([0.1..60] sec) (T60 - the time for the reverb to decay by 60db when damp == 0 ). Does not effect early reflections
-t60 = hslider("ReverbTime", 4.2, 0.1, 12, 0.1); 
+decay = hslider("Decay", 0.5, 0.0, 1.0, 0.001);
+size  = hslider("Size", 0.32, 0.0, 1.0, 0.001);
+damp  = hslider("Damping", 0.3, 0.0, 1.0, 0.001);
+diff  = hslider("Diffusion", 0.84, 0.0, 1.0, 0.001);
+depth = hslider("Modulation", 0.32, 0.0, 1.0, 0.001);
 
-// controls damping of high-frequencies as the reverb decays. 0 is no damping, 1 is very strong damping. Values should be between ([0..1])
-damp = hslider("Damping", 0.5, 0.0, 1.0, 0.01); 
+seconds = 0.8 + 11.2 * pow(decay, 2.353);
+t60 = max(0.75, (max(1.7, seconds) - 0.1) / 1.9);
 
-// scales size of delay-lines within the reverberator, producing the impression of a larger or smaller space. Values below 1 can sound metallic. Values should be between [0.5..5]
-size = hslider("Size", 3.5, 0.5, 5.0, 0.01); 
+g1 = min(0.8, 0.75 * diff / 0.84);
+g2 = min(0.7, 0.625 * diff / 0.84);
+ap(D, g) = (+ <: (de.delay(8192, int(D * ma.SR / 44100) - 1), *(0 - g))) ~ *(g) : (mem, _) : +;
+diffL = ap(211, g1) : ap(157, g1) : ap(563, g2) : ap(409, g2);
+diffR = ap(223, g1) : ap(167, g1) : ap(587, g2) : ap(431, g2);
+pre = de.delay(8192, int(0.02 * ma.SR));
+hp = fi.highpass(2, 80);
 
-// controls shape of early reflections. Values of 0.707 or more produce smooth exponential decay. Lower values produce a slower build-up of echoes. Values should be between ([0..1])
-early_diff = hslider("Diffusion", 0.707, 0.0, 1.0, 0.01); 
-
-// depth ([0..1]) of delay-line modulation. Use in combination with mod_freq to set amount of chorusing within the structure
-mod_depth = hslider("Mod Depth", 0.1, 0.0, 1.0, 0.01);
-
-// frequency ([0..10] Hz) of delay-line modulation. Use in combination with modDepth to set amount of chorusing within the structure
-mod_freq = hslider("Mod Frequency", 0.1, 0.0, 10.0, 0.01); 
-
-// multiplier ([0..1]) for the reverberation time within the low band
-low = hslider("LF Gain", 1.0, 0.0, 1.0, 0.01);
-
-mid = 1.0; // multiplier ([0..1]) for the reverberation time within the mid band
-
-// multiplier ([0..1]) for the reverberation time within the high band
-high = hslider("HF Gain", 1.0, 0.0, 1.0, 0.01); 
-
-lowcut = 600;// frequency (100..6000 Hz) at which the crossover between the low and mid bands of the reverb occurs
-highcut = 5000; // frequency (1000..10000 Hz) at which the crossover between the mid and high bands of the reverb
-
-process = re.jpverb(t60, damp, size, early_diff, mod_depth, mod_freq, low, mid, high, lowcut, highcut);
-
+process = (hp : pre : diffL), (hp : pre : diffR)
+        : re.jpverb(t60, 0.85 * pow(damp, 0.865), 1.0 + 3.0 * size, diff, depth, 0.1, 0.6, 1.0, 0.8, 300, 6000)
+        : *(1.17), *(1.17);

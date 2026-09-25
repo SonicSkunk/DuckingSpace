@@ -7,36 +7,46 @@
              saveInPreset="0"/>
   <Component type="ScriptSlider" id="Ducking" x="40" y="100" width="220" height="220"
              text="Ducking" processorId="Script FX1" parameterId="Ducking"
-             tooltip="How much the reverb ducks under the original signal."/>
+             tooltip="How much the reverb gets out of the way while your sound is playing."/>
   <Component type="ScriptSlider" id="Knob2" x="95" y="151" width="110" height="122"
              text="Speed" processorId="Script FX1" parameterId="SPEED" min="5.0"
-             max="90.0" tooltip="How fast the ducking reacts. Higher values mean a slower attack and release."/>
+             max="90.0" tooltip="How fast the reverb ducks and comes back. Higher is slower and smoother."/>
+  <Component type="ScriptSlider" id="Sensitivity" x="30" y="296" width="242" height="44"
+             text="Sensitivity" processorId="Script FX1" parameterId="Sensitivity"
+             style="Horizontal" showTextBox="0" min="0.0" max="24.0" stepSize="0.1"
+             defaultValue="0.0" tooltip="Makes the ducking react to quiet sounds. Turn it up if the ducking barely moves."/>
   <Component type="ScriptSlider" id="Knob3" x="324" y="100" width="90" height="96"
-             text="Decay" processorId="Script FX1" parameterId="Decay" tooltip="The time it takes for the reverb's tail to decay."/>
+             text="Decay" processorId="Script FX1" parameterId="Decay" tooltip="How long the reverb tail rings out."/>
   <Component type="ScriptSlider" id="Knob4" x="446" y="100" width="90" height="96"
-             text="Size" processorId="Script FX1" parameterId="Size" tooltip="The perceived size of the virtual space."
+             text="Size" processorId="Script FX1" parameterId="Size" tooltip="How big the space sounds."
              min="0.2700000107288361" middlePosition="0.6000000238418579"/>
   <Component type="ScriptSlider" id="Knob5" x="568" y="100" width="90" height="96"
              text="Modulation" processorId="Script FX1" parameterId="Modulation"
-             tooltip="The amount of pitch modulation applied to the reverb."/>
+             tooltip="Slow pitch movement in the reverb tail, like a gentle chorus."/>
   <Component type="ScriptSlider" id="Knob6" x="324" y="226" width="90" height="96"
              text="Damping" isMetaParameter="1" processorId="Script FX1" parameterId="Damping"
-             tooltip="The amount of damping in the virtual space." max="0.75"
+             tooltip="Makes the reverb tail darker as it fades, like soft walls." max="0.75"
              middlePosition="0.375"/>
   <Component type="ScriptSlider" id="Knob7" x="446" y="226" width="90" height="96"
              text="Diffusion" processorId="Script FX1" parameterId="Diffusion"
-             tooltip="How much the sound is diffused in the virtual space."/>
+             tooltip="Low lets the echoes build up slowly. High blends them into a smooth wash."/>
   <Component type="ScriptSlider" id="Knob8" x="568" y="226" width="90" height="96"
-             text="Color" processorId="Script FX1" parameterId="Color" tooltip="An equalizer to brighten or darken the sound of the reverb. Middle position is neutral."/>
-  <Component type="ScriptSlider" id="DryWet" x="556" y="356" width="128" height="40"
-             text="Dry/Wet" processorId="Script FX1" parameterId="Dry/Wet" tooltip="Mixes the original signal with the reverb."
+             text="Color" processorId="Script FX1" parameterId="Color" tooltip="Turn left for a darker reverb, right for a brighter one. The middle is neutral."/>
+  <Component type="ScriptSlider" id="Input" x="364" y="356" width="100" height="40"
+             text="Input" processorId="Script FX1" parameterId="Input" min="-24.0"
+             max="24.0" stepSize="0.1" defaultValue="0.0" tooltip="Level going into the plugin. More input also makes the ducking react more."/>
+  <Component type="ScriptSlider" id="Output" x="474" y="356" width="100" height="40"
+             text="Output" processorId="Script FX1" parameterId="Output" min="-24.0"
+             max="24.0" stepSize="0.1" defaultValue="0.0" tooltip="Level coming out of the plugin."/>
+  <Component type="ScriptSlider" id="DryWet" x="584" y="356" width="100" height="40"
+             text="Dry/Wet" processorId="Script FX1" parameterId="Dry/Wet" tooltip="Balance between your original sound and the reverb."
              middlePosition="0.550000011920929"/>
   <Component type="ScriptPanel" id="ZoomPanel" x="478" y="15" width="206" height="24"
              allowCallbacks="Clicks &amp; Hover" saveInPreset="0" tooltip="Makes the plugin window bigger or smaller."/>
   <Component type="ScriptButton" id="Button1" x="14" y="8" width="250" height="40"
              text="ButtonURL" saveInPreset="0" filmstripImage="{PROJECT_FOLDER}empty.png"
-             tooltip="Opens a browser to visit the website."/>
-  <Component type="ScriptPanel" id="Tooltip" x="58" y="356" width="480" height="40"
+             tooltip="Visit sonicskunk.com."/>
+  <Component type="ScriptPanel" id="Tooltip" x="58" y="356" width="296" height="40"
              saveInPreset="0"/>
   <Component type="ScriptPanel" id="LottiePanel" x="11" y="356" width="40" height="40"
              tooltip="*Quack quack*" saveInPreset="0"/>

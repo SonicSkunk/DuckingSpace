@@ -1,33 +1,11 @@
-# DuckingSpace - HISE project .gitignore
-#
-# What IS tracked: project settings (project_info.xml, user_info.xml), the
-# DuckingSpace preset (XmlPresetBackups + its Scripts/ScriptProcessors folder),
-# the DSP networks, the Faust reverb source (CodeLibrary/faust), its generated
-# C++ (DspNetworks/ThirdParty/*.h, ThirdParty/src, AdditionalSourceCode - the
-# plugin export compiles these), fonts and images, README and LICENSE.
-
-# ---- Rebuilt by HISE, never commit ----
-
-# Plugin export output. Holds .lib files over 500 MB (GitHub's limit is 100 MB).
 /Binaries/
-
-# DSP network DLL build (Export > Compile DSP networks as dll).
 /DspNetworks/Binaries/
-
-# Faust's raw output. HISE copies it to ThirdParty/src/ on every compile.
 /DspNetworks/ThirdParty/src_/
-
-# Resource pools written during export.
 /PooledResources/
-
-# Binary .hip saves and autosaves. XmlPresetBackups/ holds the preset as text.
 /Presets/
-
-# ---- Local only ----
-
 /test sample.wav
+/Claude outputs/
 
-# ---- OS clutter ----
 Thumbs.db
 desktop.ini
 .DS_Store

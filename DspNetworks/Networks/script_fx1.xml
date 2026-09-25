@@ -25,6 +25,16 @@
           <Parameter MinValue="0.0" MaxValue="1.0" ID="Value" Automated="1"/>
         </Parameters>
       </Node>
+      <Node ID="inputGain" FactoryPath="core.gain" Bypassed="0" Name="inputGain">
+        <Parameters>
+          <Parameter MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161" ID="Gain"
+                     Automated="1"/>
+          <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
+                     SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
+          <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
+                     SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
+        </Parameters>
+      </Node>
       <Node ID="fix32_block" FactoryPath="container.fix32_block" Bypassed="0"
             Name="fix32_block">
         <Nodes>
@@ -33,6 +43,16 @@
               <Node ID="SIDECHAIN CHANNEL" FactoryPath="container.chain" Bypassed="0"
                     Name="SIDECHAIN CHANNEL">
                 <Nodes>
+                  <Node ID="sensGain" FactoryPath="core.gain" Bypassed="0" Name="sensGain">
+                    <Parameters>
+                      <Parameter MinValue="0.0" MaxValue="24.0" StepSize="0.1000000014901161" ID="Gain"
+                                 Automated="1"/>
+                      <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
+                                 SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
+                      <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
+                                 SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
+                    </Parameters>
+                  </Node>
                   <Node ID="comp" FactoryPath="dynamics.comp" Bypassed="0" Name="comp">
                     <ModulationTargets>
                       <Connection NodeId="gain" ParameterId="Gain"/>
@@ -218,6 +238,16 @@
         </Nodes>
         <Parameters/>
       </Node>
+      <Node ID="outputGain" FactoryPath="core.gain" Bypassed="0" Name="outputGain">
+        <Parameters>
+          <Parameter MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161" ID="Gain"
+                     Automated="1"/>
+          <Parameter MinValue="0.0" MaxValue="1000.0" StepSize="0.1000000014901161"
+                     SkewFactor="0.3010300099849701" ID="Smoothing" Value="20.0"/>
+          <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
+                     SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
+        </Parameters>
+      </Node>
     </Nodes>
     <Parameters>
       <Parameter ID="Ducking" MinValue="0.0" MaxValue="1.0" Value="0.0">
@@ -269,6 +299,24 @@
       <Parameter ID="Diffusion" MinValue="0.0" MaxValue="1.0" Value="1.0">
         <Connections>
           <Connection NodeId="faust" ParameterId="Diffusion"/>
+        </Connections>
+      </Parameter>
+      <Parameter ID="Input" MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161"
+                 Value="0.0">
+        <Connections>
+          <Connection NodeId="inputGain" ParameterId="Gain"/>
+        </Connections>
+      </Parameter>
+      <Parameter ID="Output" MinValue="-24.0" MaxValue="24.0" StepSize="0.1000000014901161"
+                 Value="0.0">
+        <Connections>
+          <Connection NodeId="outputGain" ParameterId="Gain"/>
+        </Connections>
+      </Parameter>
+      <Parameter ID="Sensitivity" MinValue="0.0" MaxValue="24.0" StepSize="0.1000000014901161"
+                 Value="0.0">
+        <Connections>
+          <Connection NodeId="sensGain" ParameterId="Gain"/>
         </Connections>
       </Parameter>
     </Parameters>

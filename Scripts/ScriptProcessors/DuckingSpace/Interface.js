@@ -1,7 +1,4 @@
-// DuckingSpace 1.1 interface ("E · Neon with grooves")
-// Every control is drawn here: the panels by paint routines, the knobs by local
-// LookAndFeels. Text sizes are JUCE heights: CSS px x (winAscent + winDescent) / em,
-// which is 1.35 for DuckSans and 1.32 for DuckMono. Letter spacing is em / that ratio.
+// DuckingSpace
 
 Content.makeFrontInterface(700, 400);
 
@@ -22,7 +19,7 @@ const var C_LABEL_HI = 0xFFCFD5E1;
 const var C_TEXT = 0xFFFFFFFF;
 const var C_GROOVE = 0xFF06070A;
 
-const var ARC = 2.4; // half the knob sweep, in radians from 12 o'clock
+const var ARC = 2.4;
 
 // ---- Drawing helpers -------------------------------------------------------
 inline function lookStroke(t)
@@ -37,13 +34,11 @@ inline function lookArc(cx, cy, r, a0, a1)
 	return p;
 }
 
-// strokes a path where it was built: the area is its own bounds, so nothing moves
 inline function lookStrokePath(g, p, t)
 {
 	g.drawPath(p, p.getBounds(1.0), lookStroke(t));
 }
 
-// an arc in the purple-to-cyan gradient, at the given opacity
 inline function lookGradArc(g, cx, cy, r, a0, a1, t, alpha)
 {
 	local p = 0;
@@ -56,7 +51,6 @@ inline function lookGradArc(g, cx, cy, r, a0, a1, t, alpha)
 	}
 }
 
-// the value arc: two soft layers underneath for the glow, then the arc itself
 inline function lookValueArc(g, cx, cy, r, a0, a1, t, strong)
 {
 	lookGradArc(g, cx, cy, r, a0, a1, t * 2.6, strong ? 0.16 : 0.1);
@@ -64,8 +58,6 @@ inline function lookValueArc(g, cx, cy, r, a0, a1, t, strong)
 	lookGradArc(g, cx, cy, r, a0, a1, t, 1.0);
 }
 
-// the groove the value arc runs in: dark channel, shadow on its upper wall,
-// a little light on its lower wall, and a faint lip outside it
 inline function lookGroove(g, cx, cy, r, t)
 {
 	local p = lookArc(cx, cy, r, -ARC, ARC);
@@ -82,7 +74,6 @@ inline function lookGroove(g, cx, cy, r, t)
 	lookStrokePath(g, lookArc(cx, cy, lr, -ARC, ARC), 1.0);
 }
 
-// the white dot at the end of a value arc, with a cyan halo
 inline function lookDot(g, cx, cy, r, a, rDot, rGlow)
 {
 	local x = cx + r * Math.sin(a);
@@ -96,8 +87,6 @@ inline function lookDot(g, cx, cy, r, a, rDot, rGlow)
 	g.fillEllipse([x - rDot, y - rDot, rDot * 2.0, rDot * 2.0]);
 }
 
-// text with letter spacing. A spaced line carries its spacing after the last
-// letter too, so a centred one is nudged right by half of it.
 inline function lookText(g, s, font, h, k, colour, area, align)
 {
 	local a = [area[0], area[1], area[2], area[3]];
@@ -118,7 +107,6 @@ inline function lookPercent(v)
 	return Math.round(v * 100.0) + "%";
 }
 
-// what each knob shows in its centre
 inline function lookValueText(id, v)
 {
 	local c = Math.round((v - 0.5) * 200.0);
@@ -132,7 +120,17 @@ inline function lookValueText(id, v)
 	return lookPercent(v);
 }
 
-// ---- Background: glows, the two cards, their headers, the title -----------
+inline function lookDb(v)
+{
+	local r = Math.round(v * 10.0) / 10.0;
+
+	if (Math.abs(r) < 0.05)
+		return "0.0 dB";
+
+	return (r > 0.0 ? "+" : "") + Engine.doubleToString(r, 1) + " dB";
+}
+
+// ---- Background ------------------------------------------------------------
 const var PanelBG = Content.getComponent("PanelBG");
 
 PanelBG.setPaintRoutine(function(g)
@@ -161,7 +159,7 @@ PanelBG.setPaintRoutine(function(g)
 	g.drawAlignedText("DuckingSpace", [18, 10, 330, 34], "left");
 });
 
-// ---- Ducking: the big grooved ring, amount in the centre ------------------
+// ---- Ducking ---------------------------------------------------------------
 const var lafDucking = Content.createLocalLookAndFeel();
 
 lafDucking.registerFunction("drawRotarySlider", function(g, obj)
@@ -181,7 +179,7 @@ lafDucking.registerFunction("drawRotarySlider", function(g, obj)
 
 Content.getComponent("Ducking").setLocalLookAndFeel(lafDucking);
 
-// ---- Speed: the inner ring, sitting in the middle of the Ducking ring -----
+// ---- Speed -----------------------------------------------------------------
 const var lafSpeed = Content.createLocalLookAndFeel();
 
 lafSpeed.registerFunction("drawRotarySlider", function(g, obj)
@@ -205,7 +203,7 @@ lafSpeed.registerFunction("drawRotarySlider", function(g, obj)
 
 Content.getComponent("Knob2").setLocalLookAndFeel(lafSpeed);
 
-// ---- The six reverb knobs --------------------------------------------------
+// ---- Reverb knobs ----------------------------------------------------------
 const var lafReverb = Content.createLocalLookAndFeel();
 
 lafReverb.registerFunction("drawRotarySlider", function(g, obj)
@@ -230,32 +228,83 @@ const var reverbKnobs = ["Knob3", "Knob4", "Knob5", "Knob6", "Knob7", "Knob8"];
 for (k in reverbKnobs)
 	Content.getComponent(k).setLocalLookAndFeel(lafReverb);
 
-// ---- Dry/Wet: a small ring in the bottom bar, no groove --------------------
-const var lafMix = Content.createLocalLookAndFeel();
-
-lafMix.registerFunction("drawRotarySlider", function(g, obj)
+// ---- Input / Output / Dry/Wet ------------------------------------------------
+inline function lookMini(g, obj, label, text, bipolar)
 {
-	var cx = 108.0;
-	var cy = 20.0;
-	var r = 16.0;
-	var av = -ARC + 2.0 * ARC * obj.valueNormalized;
-	var strong = obj.hover || obj.clicked;
+	local cx = 82.0;
+	local cy = 20.0;
+	local r = 15.0;
+	local av = -ARC + 2.0 * ARC * obj.valueNormalized;
+	local strong = obj.hover || obj.clicked;
 
 	g.setColour(0x14FFFFFF);
 	lookStrokePath(g, lookArc(cx, cy, r, -ARC, ARC), 1.6);
-	lookValueArc(g, cx, cy, r, -ARC, av, 1.6, strong);
+	lookValueArc(g, cx, cy, r, bipolar ? 0.0 : -ARC, av, 1.6, strong);
 
 	g.setColour(C_TEXT);
 	g.fillEllipse([cx + r * Math.sin(av) - 2.0, cy - r * Math.cos(av) - 2.0, 4.0, 4.0]);
 
-	lookText(g, "DRY/WET", "SansSemi", 14.175, 0.163, strong ? C_LABEL_HI : C_LABEL, [0, 5.1, 80, 14.2], "right");
-	lookText(g, lookPercent(obj.value), "MonoMed", 14.52, 0.0, C_TEXT, [0, 19.4, 80, 14.52], "right");
+	lookText(g, label, "SansSemi", 14.175, 0.163, strong ? C_LABEL_HI : C_LABEL, [0, 5.1, 58, 14.2], "right");
+	lookText(g, text, "MonoMed", 14.52, 0.0, C_TEXT, [0, 19.4, 58, 14.52], "right");
+}
+
+const var lafIO = Content.createLocalLookAndFeel();
+
+lafIO.registerFunction("drawRotarySlider", function(g, obj)
+{
+	if (obj.id == "DryWet")
+		lookMini(g, obj, "DRY/WET", lookPercent(obj.value), false);
+	else
+		lookMini(g, obj, obj.text.toUpperCase(), lookDb(obj.value), true);
 });
 
-Content.getComponent("DryWet").setLocalLookAndFeel(lafMix);
+Content.getComponent("Input").setLocalLookAndFeel(lafIO);
+Content.getComponent("Output").setLocalLookAndFeel(lafIO);
+Content.getComponent("DryWet").setLocalLookAndFeel(lafIO);
 
-// ---- Ducking meter: the gold arc and the GR readout ------------------------
-// The compressor's display buffer holds 1 - gain, so 0 means no ducking.
+// ---- Sensitivity -------------------------------------------------------------
+const var lafSens = Content.createLocalLookAndFeel();
+
+lafSens.registerFunction("drawLinearSlider", function(g, obj)
+{
+	var x0 = 6.0;
+	var x1 = 236.0;
+	var y = 30.0;
+	var xv = x0 + (x1 - x0) * obj.valueNormalized;
+	var strong = obj.hover || obj.clicked;
+
+	var p = Content.createPath();
+	p.startNewSubPath(x0, y);
+	p.lineTo(x1, y);
+
+	var shape = p.createStrokedPath(lookStroke(8.0), []);
+	var b = shape.getBounds(1.0);
+
+	g.setColour(C_GROOVE);
+	g.fillPath(shape, b);
+	g.drawInnerShadowFromPath(shape, b, 0xE6000000, 2, [0, 2]);
+	g.drawInnerShadowFromPath(shape, b, 0x1AFFFFFF, 1, [0, -1]);
+
+	if (xv - x0 > 0.5)
+	{
+		g.setGradientFill([strong ? 0x44762EFF : 0x28762EFF, x0, y, strong ? 0x442EFFE9 : 0x282EFFE9, x1, y]);
+		g.fillRoundedRectangle([x0 - 3.5, y - 3.5, xv - x0 + 7.0, 7.0], 3.5);
+		g.setGradientFill([C_PURPLE, x0, y, C_CYAN, x1, y]);
+		g.fillRoundedRectangle([x0 - 1.5, y - 1.5, xv - x0 + 3.0, 3.0], 1.5);
+	}
+
+	g.setColour(0x552EFFE9);
+	g.fillEllipse([xv - 4.6, y - 4.6, 9.2, 9.2]);
+	g.setColour(C_TEXT);
+	g.fillEllipse([xv - 2.6, y - 2.6, 5.2, 5.2]);
+
+	lookText(g, "SENSITIVITY", "SansSemi", 13.5, 0.178, strong ? C_LABEL_HI : C_LABEL, [2, 4, 160, 13.5], "left");
+	lookText(g, lookDb(obj.value), "MonoMed", 13.86, 0.0, C_TEXT, [80, 3.8, 160, 13.86], "right");
+});
+
+Content.getComponent("Sensitivity").setLocalLookAndFeel(lafSens);
+
+// ---- Meter -----------------------------------------------------------------
 const var GRMeter = Content.getComponent("GRMeter");
 const var duckBuffer = Synth.getDisplayBufferSource("Script FX1").getDisplayBuffer(0);
 duckBuffer.setActive(true);
@@ -306,7 +355,7 @@ GRMeter.setTimerCallback(function()
 
 GRMeter.startTimer(40);
 
-// ---- Zoom: three pills, top right ------------------------------------------
+// ---- Zoom ------------------------------------------------------------------
 const var ZoomPanel = Content.getComponent("ZoomPanel");
 const var ZOOMS = [1.0, 1.25, 1.5];
 const var ZOOM_TEXT = ["100%", "125%", "150%"];
@@ -378,7 +427,7 @@ ZoomPanel.setMouseCallback(function(event)
 	}
 });
 
-// ---- Website link behind the title ----------------------------------------
+// ---- Website ---------------------------------------------------------------
 inline function onButton1Control(component, value)
 {
 	Engine.openWebsite("www.sonicskunk.com");
@@ -386,7 +435,7 @@ inline function onButton1Control(component, value)
 
 Content.getComponent("Button1").setControlCallback(onButton1Control);
 
-// ---- Help text in the bottom bar -------------------------------------------
+// ---- Help text -------------------------------------------------------------
 namespace TooltipPanel
 {
 	const var Tooltip = Content.getComponent("Tooltip");
@@ -395,7 +444,13 @@ namespace TooltipPanel
 
 	Tooltip.setPaintRoutine(function(g)
 	{
-		lookText(g, this.data.text, "SansMed", 17.55, 0.0, C_LABEL, [0, 11.2, 480, 17.55], "left");
+		g.setColour(C_LABEL);
+		g.setFont("SansMed", 16.2);
+
+		if (g.getStringWidth(this.data.text) > 296)
+			g.drawMultiLineText(this.data.text, [0, 17], 296, "left", 0.0);
+		else
+			g.drawAlignedText(this.data.text, [0, 11.9, 296, 16.2], "left");
 	});
 
 	Tooltip.setTimerCallback(function()

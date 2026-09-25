@@ -110,23 +110,58 @@ jobs:
         id: pack
         if: steps.plugin.outcome == 'success'
         run: |
+          set -e
           shopt -s nullglob
+          VER=$(sed -n 's/.*<Version value="\([^"]*\)".*/\1/p' "$PROJECT_DIR/project_info.xml")
+          IFS=. read -r V1 V2 V3 <<< "$VER"
+          VCODE=$(( (${V1:-0} << 16) + (${V2:-0} << 8) + ${V3:-0} ))
+          echo "$VER $VCODE" > "$LOGS/version.txt"
+          mkdir -p "$OUT/bundles" "$OUT/zip/DuckingSpace"
           cd "$PROJECT_DIR/Binaries/Builds/MacOSX/build/Release"
+          for p in *.component; do
+            /usr/libexec/PlistBuddy -c "Set :AudioComponents:0:version $VCODE" "$p/Contents/Info.plist"
+          done
           for p in *.vst3 *.component; do
             codesign --force --deep -s - "$p"
-            ditto "$p" "$OUT/$p"
+            codesign --verify --deep --strict "$p"
+            ditto "$p" "$OUT/bundles/$p"
+            ditto "$p" "$OUT/zip/DuckingSpace/$p"
             lipo -info "$p/Contents/MacOS/"* | tee -a "$LOGS/lipo.txt"
           done
+          cat > "$OUT/zip/DuckingSpace/How to install.txt" <<'EOF'
+          DuckingSpace for Mac - test build
+          ================================
+
+          1. Copy DuckingSpace.vst3 into:
+             your home folder > Library > Audio > Plug-Ins > VST3
+          2. Copy DuckingSpace.component (the AU, for Logic and GarageBand) into:
+             your home folder > Library > Audio > Plug-Ins > Components
+             (In Finder, choose Go > Go to Folder and type ~/Library/Audio/Plug-Ins)
+          3. This test build has no Apple approval yet, so the Mac blocks it at first.
+             Open the Terminal app, paste this line and press Return:
+
+             xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/DuckingSpace.vst3 ~/Library/Audio/Plug-Ins/Components/DuckingSpace.component
+
+          4. Restart your DAW and rescan plugins. DuckingSpace is listed under Sonic Skunk.
+
+          Questions or problems: info@sonicskunk.com
+          EOF
+          sed -i '' 's/^          //' "$OUT/zip/DuckingSpace/How to install.txt"
+          cd "$OUT/zip"
+          ditto -c -k --sequesterRsrc --keepParent DuckingSpace "$OUT/DuckingSpace-${VER}-mac.zip"
+          ls -la "$OUT" | tee -a "$LOGS/lipo.txt"
 
       - name: Apple AU check
         id: auval
         if: steps.pack.outcome == 'success'
         continue-on-error: true
         run: |
+          set -o pipefail
           PC=$(sed -n 's/.*<PluginCode value="\([^"]*\)".*/\1/p' "$PROJECT_DIR/project_info.xml")
           MC=$(sed -n 's/.*<CompanyCode value="\([^"]*\)".*/\1/p' "$PROJECT_DIR/user_info.xml")
-          mkdir -p ~/Library/Audio/Plug-Ins/Components
-          cp -R "$OUT"/*.component ~/Library/Audio/Plug-Ins/Components/
+          mkdir -p ~/Library/Audio/Plug-Ins/Components ~/Library/Audio/Plug-Ins/VST3
+          cp -R "$OUT"/bundles/*.component ~/Library/Audio/Plug-Ins/Components/
+          cp -R "$OUT"/bundles/*.vst3 ~/Library/Audio/Plug-Ins/VST3/
           killall -9 AudioComponentRegistrar 2>/dev/null || true
           sleep 3
           auval -a > "$LOGS/auval-list.txt" 2>&1 || true
@@ -143,17 +178,121 @@ jobs:
           unzip -q pv.zip
           PV=pluginval.app/Contents/MacOS/pluginval
           rc=0
-          for p in "$OUT"/*.vst3 ~/Library/Audio/Plug-Ins/Components/DuckingSpace.component; do
+          for p in "$OUT"/bundles/*.vst3 ~/Library/Audio/Plug-Ins/Components/DuckingSpace.component; do
             "$PV" --strictness-level 5 --skip-gui-tests --validate-in-process --timeout-ms 600000 --validate "$p" > "$LOGS/pluginval-$(basename "$p").txt" 2>&1 || rc=1
           done
           exit $rc
+
+      - name: Set up Python
+        if: steps.pack.outcome == 'success'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Listening test
+        id: listen
+        if: steps.pack.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 20
+        run: |
+          set -o pipefail
+          python -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install -q pedalboard numpy
+          mkdir -p "$GITHUB_WORKSPACE/listen"
+          cat > "$RUNNER_TEMP/render.py" <<'EOF'
+          import sys, time, json
+          import numpy as np
+          from pedalboard import load_plugin
+          from pedalboard.io import AudioFile
+
+          sr = 44100
+          out = sys.argv[1]
+          plugins = sys.argv[2:]
+          n = int(sr * 10.0)
+          x = np.zeros((2, n), dtype=np.float32)
+
+          def put(sig, start):
+              i = int(start * sr)
+              m = min(len(sig), n - i)
+              if m > 0:
+                  x[:, i:i + m] += sig[:m]
+
+          t = np.arange(int(0.4 * sr)) / sr
+          kick = np.sin(2 * np.pi * (48 * t + (140 / 20.0) * (1 - np.exp(-20 * t)))) * np.exp(-7 * t)
+          rng = np.random.default_rng(7)
+          tc = np.arange(int(0.25 * sr)) / sr
+          noise = rng.standard_normal(len(tc))
+          clap = np.diff(noise, prepend=0.0) * np.exp(-22 * tc) * 0.35
+          ts = np.arange(int(0.3 * sr)) / sr
+          stab = sum(np.sin(2 * np.pi * f * ts) for f in (261.63, 329.63, 392.0, 523.25)) * np.exp(-9 * ts) * 0.12
+          beat = 0.5
+          for b in range(16):
+              put(kick, b * beat)
+              if b % 2 == 1:
+                  put(clap, b * beat)
+              if b % 4 == 2:
+                  put(stab, b * beat + 0.25)
+          x *= 0.5 / max(1e-9, float(np.max(np.abs(x))))
+
+          with AudioFile(out + "/dry.wav", "w", sr, 2, bit_depth=24) as f:
+              f.write(x)
+
+          def db(v):
+              return 20 * np.log10(max(float(v), 1e-12))
+
+          report = {"dry_rms_db": round(db(np.sqrt(np.mean(x ** 2))), 2)}
+          for path in plugins:
+              tag = "vst3" if path.endswith(".vst3") else "au"
+              try:
+                  p = load_plugin(path)
+                  params = {}
+                  for k in p.parameters.keys():
+                      try:
+                          params[k] = str(getattr(p, k))
+                      except Exception as e:
+                          params[k] = "?"
+                  warm = np.zeros((2, sr // 2), dtype=np.float32)
+                  for _ in range(12):
+                      p.process(warm, sr, reset=False)
+                      time.sleep(0.25)
+                  y = p.process(x, sr, reset=False)
+                  finite = bool(np.all(np.isfinite(y)))
+                  y = np.nan_to_num(y)
+                  with AudioFile(out + "/mac-" + tag + ".wav", "w", sr, 2, bit_depth=24) as f:
+                      f.write(y.astype(np.float32))
+                  tail = y[:, int(8.2 * sr):]
+                  report[tag] = {
+                      "name": p.name,
+                      "params": params,
+                      "peak_db": round(db(np.max(np.abs(y))), 2),
+                      "rms_db": round(db(np.sqrt(np.mean(y ** 2))), 2),
+                      "tail_rms_db": round(db(np.sqrt(np.mean(tail ** 2))), 2),
+                      "finite": finite,
+                      "differs_from_dry": bool(np.max(np.abs(y - x)) > 1e-4),
+                  }
+              except Exception as e:
+                  report[tag] = {"error": repr(e)[:300]}
+          print(json.dumps(report, indent=1))
+          json.dump(report, open(out + "/report.json", "w"), indent=1)
+          EOF
+          sed -i '' 's/^          //' "$RUNNER_TEMP/render.py"
+          "$RUNNER_TEMP/venv/bin/python" "$RUNNER_TEMP/render.py" "$GITHUB_WORKSPACE/listen" "$OUT"/bundles/DuckingSpace.vst3 ~/Library/Audio/Plug-Ins/Components/DuckingSpace.component 2>&1 | tee "$LOGS/listen.txt"
+          test -f "$GITHUB_WORKSPACE/listen/mac-vst3.wav"
 
       - name: Upload plugin
         if: steps.pack.outcome == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: DuckingSpace-mac-test
-          path: out
+          name: DuckingSpace-mac
+          path: out/*.zip
+          retention-days: 3
+
+      - name: Upload listening test
+        if: steps.pack.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: DuckingSpace-mac-listening-test
+          path: listen
           retention-days: 3
 
       - name: Report
@@ -161,39 +300,35 @@ jobs:
         run: |
           set +e
           S="$GITHUB_STEP_SUMMARY"
+          note() { echo "::notice title=$1::$2"; }
+          note "steps" "cached=${{ steps.cache.outputs.cache-hit }} hise=${{ steps.hise_build.outcome }} export=${{ steps.export.outcome }} plugin=${{ steps.plugin.outcome }} pack=${{ steps.pack.outcome }} auval=${{ steps.auval.outcome }} loadtest=${{ steps.pluginval.outcome }} listen=${{ steps.listen.outcome }}"
+          [ -f "$LOGS/lipo.txt" ] && note "arch" "$(grep -h 'Architectures' "$LOGS/lipo.txt" | sed 's/.*are: //' | sort -u | tr '\n' ';')"
+          [ -f "$LOGS/version.txt" ] && note "version" "$(cat "$LOGS/version.txt")"
+          [ -f "$LOGS/auval.txt" ] && note "auval" "$(grep -E 'AU VALIDATION|FATAL|ERROR' "$LOGS/auval.txt" | head -3 | tr '\n' ' ')"
+          [ -f "$LOGS/auval.txt" ] && note "auval warnings" "$(grep -c 'WARNING' "$LOGS/auval.txt") warning lines: $(grep 'WARNING' "$LOGS/auval.txt" | head -3 | tr '\n' ' ' | cut -c1-600)"
+          for f in "$LOGS"/pluginval-*.txt; do
+            [ -f "$f" ] && note "$(basename "$f" .txt)" "$(grep -E 'SUCCESS|FAILED|!!!' "$f" | tail -4 | tr '\n' ' ' | cut -c1-600)"
+          done
+          [ -f "$GITHUB_WORKSPACE/listen/report.json" ] && note "listen" "$(tr -d '\n' < "$GITHUB_WORKSPACE/listen/report.json" | tr -s ' ' | cut -c1-900)"
+          [ -f "$LOGS/listen.txt" ] && [ ! -f "$GITHUB_WORKSPACE/listen/report.json" ] && note "listen log" "$(tail -5 "$LOGS/listen.txt" | tr '\n' ' ' | cut -c1-600)"
           {
             echo "## Mac build report"
-            echo ""
-            echo "| step | result |"
-            echo "|---|---|"
-            echo "| HISE source | ${{ steps.hise_src.outcome }} |"
-            echo "| HISE cached | ${{ steps.cache.outputs.cache-hit }} |"
-            echo "| HISE build | ${{ steps.hise_build.outcome }} |"
-            echo "| export | ${{ steps.export.outcome }} |"
-            echo "| plugin build | ${{ steps.plugin.outcome }} |"
-            echo "| sign and pack | ${{ steps.pack.outcome }} |"
-            echo "| Apple AU check | ${{ steps.auval.outcome }} |"
-            echo "| load test | ${{ steps.pluginval.outcome }} |"
-            echo ""
-            for f in machine.txt products.txt lipo.txt; do
-              [ -f "$LOGS/$f" ] && { echo "### $f"; echo '```'; cat "$LOGS/$f"; echo '```'; }
+            for f in machine.txt version.txt lipo.txt auval.txt listen.txt; do
+              [ -f "$LOGS/$f" ] && { echo "### $f"; echo '```'; tail -80 "$LOGS/$f"; echo '```'; }
             done
             for f in hise-build.log plugin-build.log; do
               if [ -f "$LOGS/$f" ]; then
-                n=$(grep -cE "error:|fatal error|Undefined symbols|ld: " "$LOGS/$f" || true)
+                n=$(grep -cE "error:|fatal error|Undefined symbols" "$LOGS/$f")
                 echo "### $f: $n error lines"
-                if [ "$n" != "0" ]; then echo '```'; grep -E -B2 -A3 "error:|fatal error|Undefined symbols|ld: " "$LOGS/$f" | head -120; echo '```'; fi
-                echo "#### last lines"; echo '```'; tail -25 "$LOGS/$f"; echo '```'
+                [ "$n" != "0" ] && { echo '```'; grep -E -B2 -A3 "error:|fatal error|Undefined symbols" "$LOGS/$f" | head -120; echo '```'; }
               fi
             done
-            for f in export.log hise-projucer.log plugin-projucer.log auval.txt; do
-              [ -f "$LOGS/$f" ] && { echo "### $f"; echo '```'; tail -60 "$LOGS/$f"; echo '```'; }
-            done
+            [ -f "$LOGS/export.log" ] && { echo "### export.log"; echo '```'; tail -60 "$LOGS/export.log"; echo '```'; }
             for f in "$LOGS"/pluginval-*.txt; do
-              [ -f "$f" ] && { echo "### $(basename "$f")"; echo '```'; grep -E "SUCCESS|FAILED|!!!|Starting test|ERROR" "$f" | head -60; tail -15 "$f"; echo '```'; }
+              [ -f "$f" ] && { echo "### $(basename "$f")"; echo '```'; tail -40 "$f"; echo '```'; }
             done
           } >> "$S"
-          grep -hE "EXPORT ERROR|Error|error" "$LOGS/export.log" 2>/dev/null | head -8 | while read -r l; do echo "::error title=export::$l"; done
+          grep -hE "EXPORT ERROR" "$LOGS/export.log" 2>/dev/null | head -3 | while read -r l; do echo "::error title=export::$l"; done
           grep -hE "error:" "$LOGS/plugin-build.log" 2>/dev/null | head -8 | while read -r l; do echo "::error title=plugin::$l"; done
           true
 

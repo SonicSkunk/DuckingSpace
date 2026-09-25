@@ -1,36 +1,384 @@
+// DuckingSpace 1.1 interface ("E · Neon with grooves")
+// Every control is drawn here: the panels by paint routines, the knobs by local
+// LookAndFeels. Text sizes are JUCE heights: CSS px x (winAscent + winDescent) / em,
+// which is 1.35 for DuckSans and 1.32 for DuckMono. Letter spacing is em / that ratio.
+
 Content.makeFrontInterface(700, 400);
 
+// ---- Fonts -----------------------------------------------------------------
+Engine.loadFontAs("{PROJECT_FOLDER}Fonts/Duck.ttf", "Duck");
+Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckSans-SemiBold.ttf", "SansSemi");
+Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckSans-Medium.ttf", "SansMed");
+Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckMono-Medium.ttf", "MonoMed");
+Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckMono-Bold.ttf", "MonoBold");
 
-// -- Compressor Visual
+// ---- Colours ---------------------------------------------------------------
+const var C_BG = 0xFF0E1015;
+const var C_PURPLE = 0xFF762EFF;
+const var C_CYAN = 0xFF2EFFE9;
+const var C_GOLD = 0xFFFFC100;
+const var C_LABEL = 0xFF8B93A6;
+const var C_LABEL_HI = 0xFFCFD5E1;
+const var C_TEXT = 0xFFFFFFFF;
+const var C_GROOVE = 0xFF06070A;
 
-const var dp = Synth.getDisplayBufferSource("Script FX1");
+const var ARC = 2.4; // half the knob sweep, in radians from 12 o'clock
 
-const var bf = dp.getDisplayBuffer(0);
-
-const var Panel1 = Content.getComponent("Panel1");
-
-Panel1.setTimerCallback(function()
+// ---- Drawing helpers -------------------------------------------------------
+inline function lookStroke(t)
 {
-	
-	this.data.path = bf.createPath(
-	  this.getLocalBounds(0), // target area
-	  [0.0, 1.0, 0, -1], // source range [ymin, ymax, sampleStart, sampleEnd]
-	  0); // start value
-	this.repaint();
+	return {"Thickness": t, "EndCapStyle": "rounded", "JointStyle": "curved"};
+}
+
+inline function lookArc(cx, cy, r, a0, a1)
+{
+	local p = Content.createPath();
+	p.addArc([cx - r, cy - r, 2.0 * r, 2.0 * r], a0, a1);
+	return p;
+}
+
+// strokes a path where it was built: the area is its own bounds, so nothing moves
+inline function lookStrokePath(g, p, t)
+{
+	g.drawPath(p, p.getBounds(1.0), lookStroke(t));
+}
+
+// an arc in the purple-to-cyan gradient, at the given opacity
+inline function lookGradArc(g, cx, cy, r, a0, a1, t, alpha)
+{
+	local p = 0;
+
+	if (Math.abs(a1 - a0) > 0.01)
+	{
+		p = lookArc(cx, cy, r, Math.min(a0, a1), Math.max(a0, a1));
+		g.setGradientFill([Colours.withAlpha(C_PURPLE, alpha), cx - r, cy + r, Colours.withAlpha(C_CYAN, alpha), cx + r, cy - r]);
+		lookStrokePath(g, p, t);
+	}
+}
+
+// the value arc: two soft layers underneath for the glow, then the arc itself
+inline function lookValueArc(g, cx, cy, r, a0, a1, t, strong)
+{
+	lookGradArc(g, cx, cy, r, a0, a1, t * 2.6, strong ? 0.16 : 0.1);
+	lookGradArc(g, cx, cy, r, a0, a1, t * 1.7, strong ? 0.32 : 0.22);
+	lookGradArc(g, cx, cy, r, a0, a1, t, 1.0);
+}
+
+// the groove the value arc runs in: dark channel, shadow on its upper wall,
+// a little light on its lower wall, and a faint lip outside it
+inline function lookGroove(g, cx, cy, r, t)
+{
+	local p = lookArc(cx, cy, r, -ARC, ARC);
+	local shape = p.createStrokedPath(lookStroke(t), []);
+	local b = shape.getBounds(1.0);
+
+	g.setColour(C_GROOVE);
+	g.fillPath(shape, b);
+	g.drawInnerShadowFromPath(shape, b, 0xE6000000, Math.round(t * 0.28), [0, Math.round(t * 0.22)]);
+	g.drawInnerShadowFromPath(shape, b, 0x1AFFFFFF, Math.max(1, Math.round(t * 0.18)), [0, -Math.max(1, Math.round(t * 0.14))]);
+
+	local lr = r + t * 0.5 + 0.8;
+	g.setGradientFill([0x00FFFFFF, cx, cy - lr, 0x21FFFFFF, cx, cy + lr]);
+	lookStrokePath(g, lookArc(cx, cy, lr, -ARC, ARC), 1.0);
+}
+
+// the white dot at the end of a value arc, with a cyan halo
+inline function lookDot(g, cx, cy, r, a, rDot, rGlow)
+{
+	local x = cx + r * Math.sin(a);
+	local y = cy - r * Math.cos(a);
+
+	g.setColour(0x262EFFE9);
+	g.fillEllipse([x - rGlow * 1.5, y - rGlow * 1.5, rGlow * 3.0, rGlow * 3.0]);
+	g.setColour(0x552EFFE9);
+	g.fillEllipse([x - rGlow, y - rGlow, rGlow * 2.0, rGlow * 2.0]);
+	g.setColour(C_TEXT);
+	g.fillEllipse([x - rDot, y - rDot, rDot * 2.0, rDot * 2.0]);
+}
+
+// text with letter spacing. A spaced line carries its spacing after the last
+// letter too, so a centred one is nudged right by half of it.
+inline function lookText(g, s, font, h, k, colour, area, align)
+{
+	local a = [area[0], area[1], area[2], area[3]];
+
+	if (align == "centred")
+		a[0] = a[0] + k * h * 0.5;
+
+	if (align == "right")
+		a[0] = a[0] + k * h;
+
+	g.setColour(colour);
+	g.setFontWithSpacing(font, h, k);
+	g.drawAlignedText(s, a, align);
+}
+
+inline function lookPercent(v)
+{
+	return Math.round(v * 100.0) + "%";
+}
+
+// what each knob shows in its centre
+inline function lookValueText(id, v)
+{
+	local c = Math.round((v - 0.5) * 200.0);
+
+	if (id == "Knob3")
+		return Engine.doubleToString(0.1 + v * 11.9, 1) + "s";
+
+	if (id == "Knob8")
+		return c > 0 ? "+" + c : "" + c;
+
+	return lookPercent(v);
+}
+
+// ---- Background: glows, the two cards, their headers, the title -----------
+const var PanelBG = Content.getComponent("PanelBG");
+
+PanelBG.setPaintRoutine(function(g)
+{
+	g.fillAll(C_BG);
+
+	g.setGradientFill([0x38762EFF, 150, 230, 0x00762EFF, 400, 230, true]);
+	g.fillRect([0, 0, 700, 400]);
+	g.setGradientFill([0x122EFFE9, 520, 210, 0x002EFFE9, 790, 210, true]);
+	g.fillRect([0, 0, 700, 400]);
+
+	g.setColour(0x07FFFFFF);
+	g.fillRoundedRectangle([16, 60, 270, 284], 14);
+	g.fillRoundedRectangle([298, 60, 386, 284], 14);
+	g.setColour(0x12FFFFFF);
+	g.drawRoundedRectangle([16.5, 60.5, 269, 283], 14, 1);
+	g.drawRoundedRectangle([298.5, 60.5, 385, 283], 14, 1);
+
+	lookText(g, "DUCKING", "SansSemi", 14.85, 0.193, C_LABEL, [30, 71, 150, 14.85], "left");
+	lookText(g, "REVERB", "SansSemi", 14.85, 0.193, C_LABEL, [312, 71, 150, 14.85], "left");
+
+	g.setFont("Duck", 33.6);
+	g.drawAlignedTextShadow("DuckingSpace", [18, 10, 330, 34], "left", {"Colour": 0x73FFC100, "Radius": 18, "Offset": [0, 0]});
+	g.drawAlignedTextShadow("DuckingSpace", [18, 10, 330, 34], "left", {"Colour": 0x80000000, "Radius": 1, "Offset": [0, 2]});
+	g.setColour(C_GOLD);
+	g.drawAlignedText("DuckingSpace", [18, 10, 330, 34], "left");
 });
 
-Panel1.startTimer(30);
+// ---- Ducking: the big grooved ring, amount in the centre ------------------
+const var lafDucking = Content.createLocalLookAndFeel();
 
-Panel1.setPaintRoutine(function(g)
+lafDucking.registerFunction("drawRotarySlider", function(g, obj)
 {
-	g.setColour(Colours.gold);
-	if (isDefined(this.data.path))
-		g.fillPath(this.data.path, this.getLocalBounds(0));
-	
+	var cx = 110.0;
+	var cy = 106.0;
+	var av = -ARC + 2.0 * ARC * obj.valueNormalized;
+	var strong = obj.hover || obj.clicked;
+
+	lookGroove(g, cx, cy, 94.0, 17.0);
+	lookValueArc(g, cx, cy, 94.0, -ARC, av, 7.0, strong);
+	lookDot(g, cx, cy, 94.0, av, 4.5, 8.0);
+
+	lookText(g, lookPercent(obj.value), "MonoBold", 39.6, 0.0, C_TEXT, [0, 79.4, 220, 39.6], "centred");
+	lookText(g, "AMOUNT", "SansSemi", 13.5, 0.178, C_LABEL, [0, 116.1, 220, 13.5], "centred");
 });
 
+Content.getComponent("Ducking").setLocalLookAndFeel(lafDucking);
 
+// ---- Speed: the inner ring, sitting in the middle of the Ducking ring -----
+const var lafSpeed = Content.createLocalLookAndFeel();
 
+lafSpeed.registerFunction("drawRotarySlider", function(g, obj)
+{
+	var cx = 55.0;
+	var cy = 55.0;
+	var r = 46.0;
+	var av = -ARC + 2.0 * ARC * obj.valueNormalized;
+	var strong = obj.hover || obj.clicked;
+
+	g.setColour(0x0FFFFFFF);
+	lookStrokePath(g, lookArc(cx, cy, r, -ARC, ARC), 4.0);
+	lookValueArc(g, cx, cy, r, -ARC, av, 4.0, strong);
+
+	g.setColour(C_TEXT);
+	g.fillEllipse([cx + r * Math.sin(av) - 3.0, cy - r * Math.cos(av) - 3.0, 6.0, 6.0]);
+
+	lookText(g, "SPEED", "SansSemi", 13.5, 0.178, strong ? C_LABEL_HI : C_LABEL, [0, 89.1, 110, 13.5], "centred");
+	lookText(g, Math.round(obj.value) + " ms", "MonoMed", 13.86, 0.0, 0xFFCFD5E1, [0, 102.3, 110, 13.86], "centred");
+});
+
+Content.getComponent("Knob2").setLocalLookAndFeel(lafSpeed);
+
+// ---- The six reverb knobs --------------------------------------------------
+const var lafReverb = Content.createLocalLookAndFeel();
+
+lafReverb.registerFunction("drawRotarySlider", function(g, obj)
+{
+	var cx = 45.0;
+	var cy = 38.0;
+	var r = 30.4;
+	var av = -ARC + 2.0 * ARC * obj.valueNormalized;
+	var a0 = obj.id == "Knob8" ? 0.0 : -ARC;
+	var strong = obj.hover || obj.clicked;
+
+	lookGroove(g, cx, cy, r, 7.6);
+	lookValueArc(g, cx, cy, r, a0, av, 2.8, strong);
+	lookDot(g, cx, cy, r, av, 2.6, 4.6);
+
+	lookText(g, lookValueText(obj.id, obj.value), "MonoMed", 15.05, 0.0, C_TEXT, [0, 31.0, 90, 15.05], "centred");
+	lookText(g, obj.text.toUpperCase(), "SansSemi", 14.175, 0.163, strong ? C_LABEL_HI : C_LABEL, [0, 78.6, 90, 14.2], "centred");
+});
+
+const var reverbKnobs = ["Knob3", "Knob4", "Knob5", "Knob6", "Knob7", "Knob8"];
+
+for (k in reverbKnobs)
+	Content.getComponent(k).setLocalLookAndFeel(lafReverb);
+
+// ---- Dry/Wet: a small ring in the bottom bar, no groove --------------------
+const var lafMix = Content.createLocalLookAndFeel();
+
+lafMix.registerFunction("drawRotarySlider", function(g, obj)
+{
+	var cx = 108.0;
+	var cy = 20.0;
+	var r = 16.0;
+	var av = -ARC + 2.0 * ARC * obj.valueNormalized;
+	var strong = obj.hover || obj.clicked;
+
+	g.setColour(0x14FFFFFF);
+	lookStrokePath(g, lookArc(cx, cy, r, -ARC, ARC), 1.6);
+	lookValueArc(g, cx, cy, r, -ARC, av, 1.6, strong);
+
+	g.setColour(C_TEXT);
+	g.fillEllipse([cx + r * Math.sin(av) - 2.0, cy - r * Math.cos(av) - 2.0, 4.0, 4.0]);
+
+	lookText(g, "DRY/WET", "SansSemi", 14.175, 0.163, strong ? C_LABEL_HI : C_LABEL, [0, 5.1, 80, 14.2], "right");
+	lookText(g, lookPercent(obj.value), "MonoMed", 14.52, 0.0, C_TEXT, [0, 19.4, 80, 14.52], "right");
+});
+
+Content.getComponent("DryWet").setLocalLookAndFeel(lafMix);
+
+// ---- Ducking meter: the gold arc and the GR readout ------------------------
+// The compressor's display buffer holds 1 - gain, so 0 means no ducking.
+const var GRMeter = Content.getComponent("GRMeter");
+const var duckBuffer = Synth.getDisplayBufferSource("Script FX1").getDisplayBuffer(0);
+duckBuffer.setActive(true);
+
+GRMeter.data.shown = 0.0;
+
+GRMeter.setPaintRoutine(function(g)
+{
+	var db = this.data.shown;
+	var cx = 134.0;
+	var cy = 146.0;
+	var r = 76.0;
+	var av = -ARC + 2.0 * ARC * Math.min(1.0, db / 24.0);
+
+	g.setColour(0x1AFFC100);
+	lookStrokePath(g, lookArc(cx, cy, r, -ARC, ARC), 2.5);
+
+	if (db > 0.05)
+	{
+		g.setColour(0x4DFFC100);
+		lookStrokePath(g, lookArc(cx, cy, r, -ARC, av), 6.0);
+		g.setColour(C_GOLD);
+		lookStrokePath(g, lookArc(cx, cy, r, -ARC, av), 2.5);
+	}
+
+	var t = db > 0.05 ? "GR -" + Engine.doubleToString(db, 1) + " dB" : "GR 0.0 dB";
+	lookText(g, t, "MonoMed", 14.52, 0.0, C_GOLD, [120, 11.8, 136, 14.52], "right");
+});
+
+GRMeter.setTimerCallback(function()
+{
+	var rb = duckBuffer.getReadBuffer();
+	var n = rb.length;
+	var peak = 0.0;
+
+	for (i = Math.max(0, n - 16); i < n; i++)
+		peak = Math.max(peak, rb[i]);
+
+	var db = -1.0 * Engine.getDecibelsForGainFactor(Math.max(1.0 - peak, 0.001));
+	var shown = Math.max(db, this.data.shown - 1.0);
+
+	if (Math.abs(shown - this.data.shown) > 0.05)
+	{
+		this.data.shown = shown;
+		this.repaint();
+	}
+});
+
+GRMeter.startTimer(40);
+
+// ---- Zoom: three pills, top right ------------------------------------------
+const var ZoomPanel = Content.getComponent("ZoomPanel");
+const var ZOOMS = [1.0, 1.25, 1.5];
+const var ZOOM_TEXT = ["100%", "125%", "150%"];
+const var ZOOM_X = [50, 104, 158];
+
+ZoomPanel.data.hover = -1;
+
+inline function zoomIndexAt(x, y)
+{
+	if (y < 0 || y > 24)
+		return -1;
+
+	if (x >= ZOOM_X[0] && x < ZOOM_X[0] + 48)
+		return 0;
+
+	if (x >= ZOOM_X[1] && x < ZOOM_X[1] + 48)
+		return 1;
+
+	if (x >= ZOOM_X[2] && x < ZOOM_X[2] + 48)
+		return 2;
+
+	return -1;
+}
+
+ZoomPanel.setPaintRoutine(function(g)
+{
+	var z = Settings.getZoomLevel();
+
+	lookText(g, "ZOOM", "SansSemi", 14.175, 0.178, C_LABEL, [0, 4.9, 44, 14.2], "left");
+
+	for (i = 0; i < 3; i++)
+	{
+		var area = [ZOOM_X[i], 1, 48, 22];
+		var on = Math.abs(z - ZOOMS[i]) < 0.01;
+
+		if (on)
+		{
+			var pill = Content.createPath();
+			pill.addRoundedRectangle(area, 11);
+			g.drawDropShadowFromPath(pill, area, 0x592EFFE9, 12, [0, 0]);
+			g.setColour(0x142EFFE9);
+			g.fillRoundedRectangle(area, 11);
+			g.setColour(C_CYAN);
+			g.drawRoundedRectangle([area[0] + 0.5, 1.5, 47, 21], 10.5, 1);
+		}
+		else
+		{
+			g.setColour(0x1FFFFFFF);
+			g.drawRoundedRectangle([area[0] + 0.5, 1.5, 47, 21], 10.5, 1);
+		}
+
+		var c = on ? C_CYAN : (this.data.hover == i ? C_LABEL_HI : C_LABEL);
+		lookText(g, ZOOM_TEXT[i], "MonoMed", 14.52, 0.0, c, [area[0], 4.74, 48, 14.52], "centred");
+	}
+});
+
+ZoomPanel.setMouseCallback(function(event)
+{
+	var i = zoomIndexAt(event.x, event.y);
+	var h = event.hover ? i : -1;
+
+	if (event.clicked && i >= 0)
+		Settings.setZoomLevel(ZOOMS[i]);
+
+	if (h != this.data.hover || event.clicked)
+	{
+		this.data.hover = h;
+		this.repaint();
+	}
+});
+
+// ---- Website link behind the title ----------------------------------------
 inline function onButton1Control(component, value)
 {
 	Engine.openWebsite("www.sonicskunk.com");
@@ -38,107 +386,29 @@ inline function onButton1Control(component, value)
 
 Content.getComponent("Button1").setControlCallback(onButton1Control);
 
-
-Engine.loadFontAs("{PROJECT_FOLDER}Fonts/Duck.ttf", "Duck");
-
-// Background
-const var PanelBG = Content.getComponent("PanelBG");
-PanelBG.setPaintRoutine(function(g){g.fillAll(this.get("bgColour"));});
-
-// LAF
-const rotary_laf = Engine.createGlobalScriptLookAndFeel();
-rotary_laf.registerFunction("drawRotarySlider", function(g, obj)
-{
-
-// Knob
-	if (obj.text == "Dry/Wet" || obj.text == "Ducking" || obj.text == "Speed" || obj.text == "Damping"  || obj.text == "Size" || obj.text == "Decay" || obj.text == "ModFreq" || obj.text == "Mod" || obj.text == "Color" )
-    {
-    var K = Content.createPath();
-    var p1 = Content.createPath();
-    var range = obj.max - obj.min;
-    
-    var startOffset = 2.4;
-    var arcThickness = 0.04;
-    var arcWidth = 1.0 - 2.0 * arcThickness;
-      
-    p1.clear();
-
-	var endOffset = -startOffset + 2.0 * startOffset * obj.valueNormalized;
-    
-    var val = "";
-
-    var a = obj.area;
-    var w = obj.area;
-    var round = 2;
-    var h = a[3];	    
-	    
-    g.setColour(obj.bgColour);
-    p1.addArc([arcThickness / 2, arcThickness / 2, arcWidth + arcThickness, arcWidth + arcThickness], - startOffset , 2.5);
-
-        
-    var pathArea = p1.getBounds(obj.area[2]);
-
-        
-    g.setColour(obj.bgColour);
-    g.drawPath(p1, pathArea, obj.area[2] * arcThickness);
-
-    
-    K.addArc([arcThickness / 2, arcThickness / 2, arcWidth + arcThickness, arcWidth + arcThickness], -startOffset - 0.08 , endOffset + 0.08);   
-
-    
-    var pathArea = K.getBounds(obj.area[2]);
-    
-
-    g.setGradientFill([(0xFF2EFFE9), 100, 0.7* obj.area[3],
-    (0xFF762EFF), 2.0*obj.area[2] / 360 - 1, 0.6*obj.area[3]]);
-    g.drawPath(K, pathArea, obj.area[2] * arcThickness);
-
-
-   
-    
-    if (obj.hover || obj.clicked)
-    {
-
-    g.setColour(obj.textColour);	
-    g.drawPath(K, pathArea, obj.area[2] * arcThickness );
-
-    }
-    
-    
-    g.rotate(endOffset, [obj.area[2] / 2, obj.area[2] / 2]);
-    g.setColour(obj.textColour);
-    g.fillRoundedRectangle([obj.area[2] / 2 - obj.area[2] * -0.01, obj.area[2] / 2 - obj.area[2] * 0.295, obj.area[2]  * 0.03, obj.area[2] * 0.03], 3);
-    
-
-    
-
-
-} 
-
-});
-
-
-
-
-
-// ToolTip
+// ---- Help text in the bottom bar -------------------------------------------
 namespace TooltipPanel
 {
-	const Tooltip = Content.getComponent("Tooltip");
-	
+	const var Tooltip = Content.getComponent("Tooltip");
+
+	Tooltip.data.text = "";
+
 	Tooltip.setPaintRoutine(function(g)
 	{
-		var t = Content.getCurrentTooltip();
-		
-		g.setColour(this.get("textColour"));
-		g.drawAlignedText(t, [0, 0, this.getWidth(), this.getHeight()], "left");
+		lookText(g, this.data.text, "SansMed", 17.55, 0.0, C_LABEL, [0, 11.2, 480, 17.55], "left");
 	});
-	
+
 	Tooltip.setTimerCallback(function()
 	{
-		this.repaint();
+		var t = Content.getCurrentTooltip();
+
+		if (t != this.data.text)
+		{
+			this.data.text = t;
+			this.repaint();
+		}
 	});
-	
+
 	Tooltip.startTimer(250);
 }
 

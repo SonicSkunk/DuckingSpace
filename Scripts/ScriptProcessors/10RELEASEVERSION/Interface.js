@@ -24,7 +24,8 @@ Panel1.startTimer(30);
 Panel1.setPaintRoutine(function(g)
 {
 	g.setColour(Colours.gold);
-	g.fillPath(this.data.path, this.getLocalBounds(0));
+	if (isDefined(this.data.path))
+		g.fillPath(this.data.path, this.getLocalBounds(0));
 	
 });
 

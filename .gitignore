@@ -1,10 +1,10 @@
 # DuckingSpace - HISE project .gitignore
 #
 # What IS tracked: project settings (project_info.xml, user_info.xml), the
-# release preset (XmlPresetBackups + its Scripts/ScriptProcessors folder), the
-# DSP networks, the Faust reverb source (CodeLibrary/faust), its generated C++
-# (DspNetworks/ThirdParty/*.h, ThirdParty/src, AdditionalSourceCode - the plugin
-# export compiles these), fonts and images, README and LICENSE.
+# DuckingSpace preset (XmlPresetBackups + its Scripts/ScriptProcessors folder),
+# the DSP networks, the Faust reverb source (CodeLibrary/faust), its generated
+# C++ (DspNetworks/ThirdParty/*.h, ThirdParty/src, AdditionalSourceCode - the
+# plugin export compiles these), fonts and images, README and LICENSE.
 
 # ---- Rebuilt by HISE, never commit ----
 
@@ -20,30 +20,10 @@
 # Resource pools written during export.
 /PooledResources/
 
-# Binary .hip saves and autosaves. XmlPresetBackups/ holds the same presets as text.
+# Binary .hip saves and autosaves. XmlPresetBackups/ holds the preset as text.
 /Presets/
 
-# ---- Old experiments: kept on disk, left out of the repo ----
-
-/XmlPresetBackups/COMPILER 1.0 DLL.xml
-/XmlPresetBackups/COMPILER 1.0 DLLUIData/
-/Scripts/ScriptProcessors/COMPILER10DLL/
-
-/XmlPresetBackups/sidechain forum snippet.xml
-/XmlPresetBackups/sidechain forum snippetUIData/
-/Scripts/ScriptProcessors/sidechainforumsnippet/
-
-/XmlPresetBackups/VERB DEVELOP.xml
-/XmlPresetBackups/VERB DEVELOPUIData/
-/Scripts/ScriptProcessors/VERBDEVELOP/
-
-/XmlPresetBackups/verb plug.xml
-/XmlPresetBackups/verb plugUIData/
-/Scripts/ScriptProcessors/verbplug/
-
-/XmlPresetBackups/VERB PLUGIN 1.0.xml
-/XmlPresetBackups/VERB PLUGIN 1.0UIData/
-/Scripts/ScriptProcessors/VERBPLUGIN10/
+# ---- Local only ----
 
 /test sample.wav
 

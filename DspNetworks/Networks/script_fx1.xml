@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <Network ID="script_fx1" AllowCompilation="1" Version="0.0.0">
-  <Node FactoryPath="container.chain" ID="script_fx1" Bypassed="0" ShowParameters="1">
+  <Node FactoryPath="container.chain" ID="script_fx1" Bypassed="0" ShowParameters="1"
+        Name="script_fx1">
     <Nodes>
-      <Node ID="xfader" FactoryPath="control.xfader" Bypassed="0">
+      <Node ID="xfader" FactoryPath="control.xfader" Bypassed="0" Name="xfader">
         <Properties>
           <Property ID="NumParameters" Value="2"/>
           <Property ID="Mode" Value="RMS"/>
@@ -24,13 +25,15 @@
           <Parameter MinValue="0.0" MaxValue="1.0" ID="Value" Automated="1"/>
         </Parameters>
       </Node>
-      <Node ID="fix32_block" FactoryPath="container.fix32_block" Bypassed="0">
+      <Node ID="fix32_block" FactoryPath="container.fix32_block" Bypassed="0"
+            Name="fix32_block">
         <Nodes>
-          <Node ID="split" FactoryPath="container.split" Bypassed="0">
+          <Node ID="split" FactoryPath="container.split" Bypassed="0" Name="split">
             <Nodes>
-              <Node ID="SIDECHAIN CHANNEL" FactoryPath="container.chain" Bypassed="0">
+              <Node ID="SIDECHAIN CHANNEL" FactoryPath="container.chain" Bypassed="0"
+                    Name="SIDECHAIN CHANNEL">
                 <Nodes>
-                  <Node ID="comp" FactoryPath="dynamics.comp" Bypassed="0">
+                  <Node ID="comp" FactoryPath="dynamics.comp" Bypassed="0" Name="comp">
                     <ModulationTargets>
                       <Connection NodeId="gain" ParameterId="Gain"/>
                     </ModulationTargets>
@@ -51,7 +54,8 @@
                       <Parameter MinValue="0.0" MaxValue="2.0" StepSize="1.0" ID="Sidechain" Value="0.0"/>
                     </Parameters>
                   </Node>
-                  <Node ID="clear" FactoryPath="math.clear" Bypassed="0" Comment="&#10;">
+                  <Node ID="clear" FactoryPath="math.clear" Bypassed="0" Comment="&#10;"
+                        Name="clear">
                     <Parameters>
                       <Parameter MinValue="0.0" MaxValue="1.0" ID="Value" Value="0.0"/>
                     </Parameters>
@@ -59,9 +63,9 @@
                 </Nodes>
                 <Parameters/>
               </Node>
-              <Node ID="DRY CHANNEL" FactoryPath="container.split" Bypassed="0">
+              <Node ID="DRY CHANNEL" FactoryPath="container.split" Bypassed="0" Name="DRY CHANNEL">
                 <Nodes>
-                  <Node ID="gain1" FactoryPath="core.gain" Bypassed="0">
+                  <Node ID="gain1" FactoryPath="core.gain" Bypassed="0" Name="gain1">
                     <Parameters>
                       <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
                                  SkewFactor="5.422270774841309" ID="Gain" Automated="1"/>
@@ -74,9 +78,10 @@
                 </Nodes>
                 <Parameters/>
               </Node>
-              <Node ID="VERB CHANNEL" FactoryPath="container.chain" Bypassed="0">
+              <Node ID="VERB CHANNEL" FactoryPath="container.chain" Bypassed="0"
+                    Name="VERB CHANNEL">
                 <Nodes>
-                  <Node ID="gain2" FactoryPath="core.gain" Bypassed="0">
+                  <Node ID="gain2" FactoryPath="core.gain" Bypassed="0" Name="gain2">
                     <Parameters>
                       <Parameter MinValue="-100.0" MaxValue="0.0" StepSize="0.1000000014901161"
                                  SkewFactor="5.422270774841309" ID="Gain" Automated="1"/>
@@ -86,7 +91,7 @@
                                  SkewFactor="5.422270774841309" ID="ResetValue" Value="0.0"/>
                     </Parameters>
                   </Node>
-                  <Node ID="xfader1" FactoryPath="control.xfader" Bypassed="0">
+                  <Node ID="xfader1" FactoryPath="control.xfader" Bypassed="0" Name="xfader1">
                     <Properties>
                       <Property ID="NumParameters" Value="2"/>
                       <Property ID="Mode" Value="Overlap"/>
@@ -108,7 +113,7 @@
                     </Parameters>
                   </Node>
                   <Node ID="freq_split4" FactoryPath="container.split" ShowParameters="1"
-                        Bypassed="0">
+                        Bypassed="0" Name="freq_split4">
                     <Parameters>
                       <Parameter MinValue="20.0" MaxValue="20000.0" SkewFactor="0.2299045584686382"
                                  ID="Band 1" Value="1069.184636237443">
@@ -119,10 +124,10 @@
                       </Parameter>
                     </Parameters>
                     <Nodes>
-                      <Node ID="band4" FactoryPath="container.chain" Bypassed="0">
+                      <Node ID="band4" FactoryPath="container.chain" Bypassed="0" Name="band4">
                         <Nodes>
                           <Node ID="lr1_3" FactoryPath="jdsp.jlinkwitzriley" NodeColour="4284966809"
-                                Bypassed="0">
+                                Bypassed="0" Name="lr1_3">
                             <ComplexData>
                               <Filters>
                                 <Filter Index="-1"/>
@@ -134,7 +139,8 @@
                               <Parameter MinValue="0.0" MaxValue="2.0" StepSize="1.0" ID="Type" Value="0.0"/>
                             </Parameters>
                           </Node>
-                          <Node ID="dummy4" FactoryPath="math.mul" NodeColour="4294967295" Bypassed="0">
+                          <Node ID="dummy4" FactoryPath="math.mul" NodeColour="4294967295" Bypassed="0"
+                                Name="dummy4">
                             <Parameters>
                               <Parameter MinValue="0.0" MaxValue="1.0" ID="Value" Automated="1"/>
                             </Parameters>
@@ -142,10 +148,10 @@
                         </Nodes>
                         <Parameters/>
                       </Node>
-                      <Node ID="band5" FactoryPath="container.chain" Bypassed="0">
+                      <Node ID="band5" FactoryPath="container.chain" Bypassed="0" Name="band5">
                         <Nodes>
                           <Node ID="lr2_3" FactoryPath="jdsp.jlinkwitzriley" NodeColour="4285032345"
-                                Bypassed="0">
+                                Bypassed="0" Name="lr2_3">
                             <ComplexData>
                               <Filters>
                                 <Filter Index="-1"/>
@@ -157,7 +163,8 @@
                               <Parameter MinValue="0.0" MaxValue="2.0" StepSize="1.0" ID="Type" Value="1.0"/>
                             </Parameters>
                           </Node>
-                          <Node ID="dummy5" FactoryPath="math.mul" NodeColour="4294967295" Bypassed="0">
+                          <Node ID="dummy5" FactoryPath="math.mul" NodeColour="4294967295" Bypassed="0"
+                                Name="dummy5">
                             <Parameters>
                               <Parameter MinValue="0.0" MaxValue="1.0" ID="Value" Automated="1"/>
                             </Parameters>
@@ -167,7 +174,7 @@
                       </Node>
                     </Nodes>
                   </Node>
-                  <Node ID="faust" FactoryPath="core.faust" Bypassed="0">
+                  <Node ID="faust" FactoryPath="core.faust" Bypassed="0" Name="faust">
                     <Properties>
                       <Property ID="ClassId" Value="VerbScript"/>
                       <Property ID="NumParameters" Value="0"/>
@@ -192,7 +199,7 @@
                     </Parameters>
                     <SwitchTargets/>
                   </Node>
-                  <Node ID="gain" FactoryPath="core.gain" Bypassed="0">
+                  <Node ID="gain" FactoryPath="core.gain" Bypassed="0" Name="gain">
                     <Parameters>
                       <Parameter MinValue="0.0" MaxValue="-100.0" StepSize="0.1000000014901161"
                                  SkewFactor="5.422270774841309" ID="Gain" Automated="1"/>

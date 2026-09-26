@@ -146,7 +146,6 @@ jobs:
 
           Questions or problems: info@sonicskunk.com
           EOF
-          sed -i '' 's/^          //' "$OUT/zip/DuckingSpace/How to install.txt"
           cd "$OUT/zip"
           ditto -c -k --sequesterRsrc --keepParent DuckingSpace "$OUT/DuckingSpace-${VER}-mac.zip"
           ls -la "$OUT" | tee -a "$LOGS/lipo.txt"
@@ -275,7 +274,6 @@ jobs:
           print(json.dumps(report, indent=1))
           json.dump(report, open(out + "/report.json", "w"), indent=1)
           EOF
-          sed -i '' 's/^          //' "$RUNNER_TEMP/render.py"
           "$RUNNER_TEMP/venv/bin/python" "$RUNNER_TEMP/render.py" "$GITHUB_WORKSPACE/listen" "$OUT"/bundles/DuckingSpace.vst3 ~/Library/Audio/Plug-Ins/Components/DuckingSpace.component 2>&1 | tee "$LOGS/listen.txt"
           test -f "$GITHUB_WORKSPACE/listen/mac-vst3.wav"
 
@@ -301,13 +299,14 @@ jobs:
           set +e
           S="$GITHUB_STEP_SUMMARY"
           note() { echo "::notice title=$1::$2"; }
-          note "steps" "cached=${{ steps.cache.outputs.cache-hit }} hise=${{ steps.hise_build.outcome }} export=${{ steps.export.outcome }} plugin=${{ steps.plugin.outcome }} pack=${{ steps.pack.outcome }} auval=${{ steps.auval.outcome }} loadtest=${{ steps.pluginval.outcome }} listen=${{ steps.listen.outcome }}"
+          note "build steps" "cached=${{ steps.cache.outputs.cache-hit }} hise=${{ steps.hise_build.outcome }} export=${{ steps.export.outcome }} plugin=${{ steps.plugin.outcome }} pack=${{ steps.pack.outcome }}"
+          note "test steps" "auval=${{ steps.auval.outcome }} loadtest=${{ steps.pluginval.outcome }} listen=${{ steps.listen.outcome }}"
           [ -f "$LOGS/lipo.txt" ] && note "arch" "$(grep -h 'Architectures' "$LOGS/lipo.txt" | sed 's/.*are: //' | sort -u | tr '\n' ';')"
           [ -f "$LOGS/version.txt" ] && note "version" "$(cat "$LOGS/version.txt")"
           [ -f "$LOGS/auval.txt" ] && note "auval" "$(grep -E 'AU VALIDATION|FATAL|ERROR' "$LOGS/auval.txt" | head -3 | tr '\n' ' ')"
           [ -f "$LOGS/auval.txt" ] && note "auval warnings" "$(grep -c 'WARNING' "$LOGS/auval.txt") warning lines: $(grep 'WARNING' "$LOGS/auval.txt" | head -3 | tr '\n' ' ' | cut -c1-600)"
           for f in "$LOGS"/pluginval-*.txt; do
-            [ -f "$f" ] && note "$(basename "$f" .txt)" "$(grep -E 'SUCCESS|FAILED|!!!' "$f" | tail -4 | tr '\n' ' ' | cut -c1-600)"
+            [ -f "$f" ] && note "$(basename "$f" .txt)" "result: $(grep -cE 'SUCCESS' "$f") success, $(grep -cE 'FAILED' "$f") failed, $(grep -c '!!!' "$f") warnings. Last lines: $(grep -v '^\s*$' "$f" | tail -6 | tr '\n' ' ' | cut -c1-700)"
           done
           [ -f "$GITHUB_WORKSPACE/listen/report.json" ] && note "listen" "$(tr -d '\n' < "$GITHUB_WORKSPACE/listen/report.json" | tr -s ' ' | cut -c1-900)"
           [ -f "$LOGS/listen.txt" ] && [ ! -f "$GITHUB_WORKSPACE/listen/report.json" ] && note "listen log" "$(tail -5 "$LOGS/listen.txt" | tr '\n' ' ' | cut -c1-600)"

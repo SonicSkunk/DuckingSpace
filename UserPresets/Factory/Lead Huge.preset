@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<Preset Version="1.1.0">
+  <Content Processor="Interface">
+    <Control type="ScriptSlider" id="Ducking" value="0.550000011920929"/>
+    <Control type="ScriptSlider" id="Knob2" value="34.65999984741211"/>
+    <Control type="ScriptSlider" id="Sensitivity" value="12.5"/>
+    <Control type="ScriptSlider" id="Knob3" value="0.8600000143051147"/>
+    <Control type="ScriptSlider" id="Knob4" value="0.6899999976158142"/>
+    <Control type="ScriptSlider" id="Knob5" value="0.3600000143051147"/>
+    <Control type="ScriptSlider" id="Knob6" value="0.1099999994039536"/>
+    <Control type="ScriptSlider" id="Knob7" value="0.6399999856948853"/>
+    <Control type="ScriptSlider" id="Knob8" value="0.6399999856948853"/>
+    <Control type="ScriptSlider" id="Input" value="0.0"/>
+    <Control type="ScriptSlider" id="Output" value="3.576278686523438e-7"/>
+    <Control type="ScriptSlider" id="DryWet" value="0.5099999904632568"/>
+    <Control type="ScriptPanel" id="ModePanel" value="1.0"/>
+  </Content>
+  <MidiAutomation/>
+  <MPEData Enabled="0"/>
+</Preset>

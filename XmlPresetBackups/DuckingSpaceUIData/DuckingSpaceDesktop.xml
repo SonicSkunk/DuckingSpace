@@ -18,7 +18,7 @@
              text="Size" processorId="Script FX1" parameterId="Size" tooltip="How big the space sounds."/>
   <Component type="ScriptSlider" id="Knob5" x="568" y="100" width="90" height="96"
              text="Modulation" processorId="Script FX1" parameterId="Modulation"
-             tooltip="Slow pitch movement in the reverb tail, like a gentle chorus."/>
+             tooltip="Adds a lush chorus to the reverb. A little makes it wider, a lot makes it shimmer."/>
   <Component type="ScriptSlider" id="Knob6" x="324" y="226" width="90" height="96"
              text="Damping" isMetaParameter="1" processorId="Script FX1" parameterId="Damping"
              tooltip="Makes the reverb tail darker as it fades, like soft walls."/>
@@ -41,10 +41,21 @@
              saveInPreset="1" tooltip="CLASSIC is the lush DuckingSpace reverb. HALL is a smooth, natural hall."/>
   <Component type="ScriptPanel" id="ZoomPanel" x="478" y="15" width="206"
              height="24" allowCallbacks="Clicks &amp; Hover" tooltip="Makes the plugin window bigger or smaller."/>
-  <Component type="ScriptButton" id="Button1" x="14" y="8" width="250" height="40"
+  <Component type="ScriptPanel" id="PresetPrev" x="244" y="15" width="22"
+             height="24" allowCallbacks="Clicks &amp; Hover" tooltip="Previous preset."/>
+  <Component type="ScriptPanel" id="PresetName" x="270" y="15" width="124"
+             height="24" allowCallbacks="Clicks &amp; Hover" popupOnRightClick="0"
+             popupMenuAlign="1" tooltip="Click to pick a preset." popupMenuItems="#FACTORY&#10;Default&#10;Bass Slap&#10;Drum Room&#10;Drum Slap&#10;Lead Huge&#10;Lead Synth&#10;Organ&#10;Piano Bright&#10;Piano Dark&#10;Pluck&#10;Vocal Bright&#10;Vocal Dark&#10;Vocal Pop&#10;-&#10;Delete &quot;Default&quot;"/>
+  <Component type="ScriptPanel" id="PresetNext" x="398" y="15" width="22"
+             height="24" allowCallbacks="Clicks &amp; Hover" tooltip="Next preset."/>
+  <Component type="ScriptPanel" id="PresetSave" x="426" y="15" width="44"
+             height="24" allowCallbacks="Clicks &amp; Hover" tooltip="Save the current sound as a preset. Type a name, then press Enter."/>
+  <Component type="ScriptButton" id="Button1" x="14" y="8" width="224" height="40"
              text="ButtonURL" saveInPreset="0" filmstripImage="{PROJECT_FOLDER}empty.png"
              tooltip="Visit sonicskunk.com."/>
   <Component type="ScriptPanel" id="Tooltip" x="58" y="356" width="296" height="40"/>
   <Component type="ScriptPanel" id="LottiePanel" x="11" y="356" width="40"
              height="40" tooltip="*Quack quack*"/>
+  <Component type="ScriptPanel" id="PresetConfirm" x="0" y="0" width="700"
+             height="400" allowCallbacks="Clicks &amp; Hover" visible="0"/>
 </ContentProperties>

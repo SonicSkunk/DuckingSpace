@@ -561,6 +561,709 @@ namespace TooltipPanel
 	Tooltip.startTimer(250);
 }
 
+// ---- Presets ---------------------------------------------------------------
+// Factory presets live in UserPresets/Factory and are built into the plugin.
+// SAVE in the plugin writes to User (the only folder a user can delete from).
+// SAVE inside HISE writes to Factory, so that is how factory presets are made.
+namespace PresetBar
+{
+	const var Prev = Content.getComponent("PresetPrev");
+	const var Name = Content.getComponent("PresetName");
+	const var Next = Content.getComponent("PresetNext");
+	const var Save = Content.getComponent("PresetSave");
+	const var Confirm = Content.getComponent("PresetConfirm");
+
+	const var presetFolder = FileSystem.getFolder(FileSystem.UserPresets);
+	const var inHise = Engine.isHISE();
+	const var saveFolder = inHise ? "Factory" : "User";
+	const var allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -_()&+!',";
+
+	const var state = {
+		"factory": [],
+		"user": [],
+		"current": "",
+		"found": false,
+		"lastPolled": "-",
+		"editing": false,
+		"menuLines": [],
+		"menuActs": [],
+		"cTitle": "",
+		"cName": "",
+		"cOk": "",
+		"cAction": "",
+		"cRel": "",
+		"cHover": -1
+	};
+
+	inline function nameOf(rel)
+	{
+		return rel.substring(rel.lastIndexOf("/") + 1, rel.length);
+	}
+
+	inline function fileOf(rel)
+	{
+		return presetFolder.getChildFile(rel + ".preset");
+	}
+
+	inline function isDeletable(rel)
+	{
+		if (rel == "")
+			return false;
+
+		if (inHise)
+			return true;
+
+		return rel.startsWith("User/");
+	}
+
+	// Default first, then A to Z. User presets go in their own list.
+	inline function scan()
+	{
+		local all = Engine.getUserPresetList();
+		local f = [];
+		local u = [];
+		local i = 0;
+
+		all.sortNatural();
+
+		for (i = 0; i < all.length; i++)
+		{
+			if (!all[i].startsWith("User/") && nameOf(all[i]) == "Default")
+				f.push(all[i]);
+		}
+
+		for (i = 0; i < all.length; i++)
+		{
+			if (all[i].startsWith("User/"))
+				u.push(all[i]);
+			else if (nameOf(all[i]) != "Default")
+				f.push(all[i]);
+		}
+
+		state.factory = f;
+		state.user = u;
+	}
+
+	// Works out which preset is loaded from the name HISE remembers.
+	// A DAW session restores that name without telling the script, so this runs on a timer too.
+	inline function resolveCurrent()
+	{
+		local n = Engine.getCurrentUserPresetName();
+		local i = 0;
+
+		state.found = false;
+
+		if (n == "")
+		{
+			state.current = "";
+			return;
+		}
+
+		if (state.current != "" && nameOf(state.current) == n && fileOf(state.current).isFile())
+		{
+			state.found = true;
+			return;
+		}
+
+		state.current = "";
+
+		for (i = 0; i < state.user.length; i++)
+		{
+			if (nameOf(state.user[i]) == n)
+				state.current = state.user[i];
+		}
+
+		if (state.current == "")
+		{
+			for (i = 0; i < state.factory.length; i++)
+			{
+				if (nameOf(state.factory[i]) == n)
+					state.current = state.factory[i];
+			}
+		}
+
+		state.found = state.current != "";
+	}
+
+	inline function displayName()
+	{
+		if (state.current != "")
+			return nameOf(state.current);
+
+		if (Engine.getCurrentUserPresetName() == "")
+			return "Default";
+
+		return "No preset";
+	}
+
+	// Every line is a plain item, so a click always maps to the line it was on.
+	// "#" lines are headings and "-" is a divider; both are drawn by lafMenu and do nothing when clicked.
+	inline function rebuildMenu()
+	{
+		local lines = [];
+		local acts = [];
+		local i = 0;
+
+		if (state.factory.length > 0)
+		{
+			lines.push("#FACTORY");
+			acts.push("");
+
+			for (i = 0; i < state.factory.length; i++)
+			{
+				lines.push(nameOf(state.factory[i]));
+				acts.push("L" + state.factory[i]);
+			}
+		}
+
+		if (!inHise)
+		{
+			if (lines.length > 0)
+			{
+				lines.push("-");
+				acts.push("");
+			}
+
+			lines.push("#MY PRESETS");
+			acts.push("");
+
+			if (state.user.length == 0)
+			{
+				lines.push("#Click SAVE to add your own");
+				acts.push("");
+			}
+
+			for (i = 0; i < state.user.length; i++)
+			{
+				lines.push(nameOf(state.user[i]));
+				acts.push("L" + state.user[i]);
+			}
+		}
+
+		if (lines.length == 0)
+		{
+			lines.push("#No presets yet");
+			acts.push("");
+		}
+
+		if (isDeletable(state.current))
+		{
+			lines.push("-");
+			acts.push("");
+			lines.push("Delete \"" + nameOf(state.current) + "\"");
+			acts.push("D" + state.current);
+		}
+
+		state.menuLines = lines;
+		state.menuActs = acts;
+		Name.set("popupMenuItems", lines.join("\n"));
+	}
+
+	inline function refresh()
+	{
+		scan();
+		resolveCurrent();
+		rebuildMenu();
+		Name.repaint();
+	}
+
+	inline function loadRel(rel)
+	{
+		local f = fileOf(rel);
+
+		if (f.isFile())
+		{
+			state.current = rel;
+			state.lastPolled = nameOf(rel);
+			Engine.loadUserPreset(f);
+		}
+
+		refresh();
+	}
+
+	inline function step(dir)
+	{
+		local all = [];
+		local i = 0;
+		local idx = -1;
+
+		scan();
+
+		for (i = 0; i < state.factory.length; i++)
+			all.push(state.factory[i]);
+
+		for (i = 0; i < state.user.length; i++)
+			all.push(state.user[i]);
+
+		if (all.length == 0)
+			return;
+
+		idx = all.indexOf(state.current);
+
+		if (idx == -1)
+		{
+			idx = dir > 0 ? 0 : all.length - 1;
+		}
+		else
+		{
+			idx = idx + dir;
+
+			if (idx >= all.length)
+				idx = 0;
+
+			if (idx < 0)
+				idx = all.length - 1;
+		}
+
+		loadRel(all[idx]);
+	}
+
+	inline function saveRel(rel)
+	{
+		if (!presetFolder.getChildFile(saveFolder).isDirectory())
+			presetFolder.createDirectory(saveFolder);
+
+		Engine.saveUserPreset(fileOf(rel));
+		state.current = rel;
+		state.lastPolled = nameOf(rel);
+		refresh();
+	}
+
+	inline function deleteRel(rel)
+	{
+		local f = fileOf(rel);
+
+		if (f.isFile())
+			f.deleteFileOrDirectory();
+
+		refresh();
+	}
+
+	// Letters, numbers and a few safe symbols only, so the name is a legal file name everywhere.
+	inline function cleanName(text)
+	{
+		local out = "";
+		local ch = "";
+		local i = 0;
+
+		for (i = 0; i < text.length; i++)
+		{
+			ch = text.charAt(i);
+
+			if (allowedChars.indexOf(ch) != -1)
+				out = out + ch;
+		}
+
+		out = out.trim();
+
+		if (out.length > 32)
+			out = out.substring(0, 32).trim();
+
+		return out;
+	}
+
+	inline function askConfirm(title, presetName, okText, action, rel)
+	{
+		state.cTitle = title;
+		state.cName = presetName;
+		state.cOk = okText;
+		state.cAction = action;
+		state.cRel = rel;
+		state.cHover = -1;
+		Confirm.showControl(true);
+		Confirm.repaint();
+	}
+
+	inline function confirmClose()
+	{
+		Confirm.showControl(false);
+	}
+
+	inline function confirmRun()
+	{
+		Confirm.showControl(false);
+
+		if (state.cAction == "save")
+			saveRel(state.cRel);
+
+		if (state.cAction == "delete")
+			deleteRel(state.cRel);
+	}
+
+	inline function nameEntered(ok, text)
+	{
+		local n = "";
+		local rel = "";
+
+		state.editing = false;
+		Name.repaint();
+
+		if (!ok)
+			return;
+
+		n = cleanName(text);
+
+		if (n == "")
+			return;
+
+		rel = saveFolder + "/" + n;
+
+		if (fileOf(rel).isFile())
+			askConfirm("Replace this preset?", n, "REPLACE", "save", rel);
+		else
+			saveRel(rel);
+	}
+
+	inline function startSave()
+	{
+		local t = "";
+
+		if (state.editing)
+			return;
+
+		if (isDeletable(state.current))
+			t = nameOf(state.current);
+
+		state.editing = true;
+		Name.repaint();
+
+		Content.showModalTextInput({
+			"parentComponent": "PresetName",
+			"x": 11,
+			"y": 4,
+			"width": 100,
+			"height": 16,
+			"text": t,
+			"fontName": "SansMed",
+			"fontSize": 14.0,
+			"alignment": "left",
+			"bgColour": 0xFF0E1015,
+			"itemColour": 0x00000000,
+			"textColour": 0xFFFFFFFF
+		}, nameEntered);
+	}
+
+	inline function menuChosen(result, itemText)
+	{
+		local idx = result - 1;
+		local a = "";
+
+		Console.print("Preset list: clicked " + result + " (" + itemText + ")");
+
+		if (idx < 0 || idx >= state.menuActs.length)
+			return;
+
+		if (state.menuLines[idx] != itemText)
+			idx = state.menuLines.indexOf(itemText);
+
+		if (idx == -1)
+			return;
+
+		a = state.menuActs[idx];
+
+		if (a == "")
+			return;
+
+		if (a.charAt(0) == "L")
+			loadRel(a.substring(1, a.length));
+
+		if (a.charAt(0) == "D")
+			askConfirm("Delete this preset?", nameOf(a.substring(1, a.length)), "DELETE", "delete", a.substring(1, a.length));
+	}
+
+	inline function afterLoad(presetFile)
+	{
+		local rel = presetFile.getRelativePathFrom(presetFolder).replace("\\", "/");
+
+		if (rel.endsWith(".preset"))
+			rel = rel.substring(0, rel.length - 7);
+
+		state.current = rel;
+		state.lastPolled = nameOf(rel);
+		refresh();
+		ModePanel.repaint();
+	}
+
+	inline function poll()
+	{
+		local n = Engine.getCurrentUserPresetName();
+
+		if (n != state.lastPolled)
+		{
+			state.lastPolled = n;
+			refresh();
+		}
+	}
+
+	// ---- Drawing ----
+	inline function pillOutline(g, w, colour)
+	{
+		g.setColour(colour);
+		g.drawRoundedRectangle([0.5, 1.5, w - 1, 21], 10.5, 1);
+	}
+
+	inline function fitText(g, text, maxWidth)
+	{
+		local t = text;
+
+		if (g.getStringWidth(t) <= maxWidth)
+			return t;
+
+		while (t.length > 1 && g.getStringWidth(t + "...") > maxWidth)
+			t = t.substring(0, t.length - 1);
+
+		return t.trim() + "...";
+	}
+
+	inline function paintArrow(g, panel, left)
+	{
+		local hover = panel.data.hover == 1;
+		local p = Content.createPath();
+
+		pillOutline(g, 22, hover ? 0x40FFFFFF : 0x1FFFFFFF);
+
+		if (left)
+		{
+			p.startNewSubPath(13.5, 8.0);
+			p.lineTo(13.5, 16.0);
+			p.lineTo(8.0, 12.0);
+		}
+		else
+		{
+			p.startNewSubPath(8.5, 8.0);
+			p.lineTo(8.5, 16.0);
+			p.lineTo(14.0, 12.0);
+		}
+
+		p.closeSubPath();
+		g.setColour(hover ? C_LABEL_HI : C_LABEL);
+		g.fillPath(p, p.getBounds(1.0));
+	}
+
+	inline function paintName(g, panel)
+	{
+		local hover = panel.data.hover == 1;
+		local t = "";
+		local p = Content.createPath();
+
+		if (state.editing)
+		{
+			pillOutline(g, 124, C_CYAN);
+			return;
+		}
+
+		pillOutline(g, 124, hover ? 0x8C2EFFE9 : 0x4D2EFFE9);
+
+		g.setFont("SansMed", 14.0);
+		t = fitText(g, displayName(), 88);
+		g.setColour(state.found ? (hover ? C_TEXT : C_LABEL_HI) : C_LABEL);
+		g.drawAlignedText(t, [11, 1, 92, 22], "left");
+
+		p.startNewSubPath(106.0, 10.0);
+		p.lineTo(110.0, 14.0);
+		p.lineTo(114.0, 10.0);
+		g.setColour(hover ? C_LABEL_HI : C_LABEL);
+		lookStrokePath(g, p, 1.5);
+	}
+
+	inline function paintSave(g, panel)
+	{
+		local hover = panel.data.hover == 1;
+
+		pillOutline(g, 44, hover ? 0x40FFFFFF : 0x1FFFFFFF);
+		lookText(g, "SAVE", "SansSemi", 12.5, 0.178, hover ? C_LABEL_HI : C_LABEL, [0, 5.6, 44, 12.5], "centred");
+	}
+
+	inline function confirmButtonAt(x, y)
+	{
+		if (y < 214 || y > 242)
+			return -1;
+
+		if (x >= 222 && x < 344)
+			return 0;
+
+		if (x >= 356 && x < 478)
+			return 1;
+
+		return -1;
+	}
+
+	inline function paintConfirm(g)
+	{
+		local okArea = [356, 214, 122, 28];
+		local cancelArea = [222, 214, 122, 28];
+		local pill = Content.createPath();
+
+		g.setColour(0xC8050608);
+		g.fillRect([0, 0, 700, 400]);
+
+		g.setColour(0xFF141820);
+		g.fillRoundedRectangle([200, 138, 300, 124], 12);
+		g.setColour(0x332EFFE9);
+		g.drawRoundedRectangle([200.5, 138.5, 299, 123], 12, 1);
+
+		lookText(g, state.cTitle, "SansMed", 15.0, 0.0, C_LABEL_HI, [200, 157, 300, 15], "centred");
+		lookText(g, state.cName, "MonoMed", 14.52, 0.0, C_CYAN, [200, 181, 300, 14.52], "centred");
+
+		g.setColour(state.cHover == 0 ? 0x40FFFFFF : 0x1FFFFFFF);
+		g.drawRoundedRectangle([222.5, 214.5, 121, 27], 13.5, 1);
+		lookText(g, "CANCEL", "SansSemi", 13.5, 0.178, state.cHover == 0 ? C_LABEL_HI : C_LABEL, [222, 221.2, 122, 13.5], "centred");
+
+		pill.addRoundedRectangle(okArea, 14);
+		g.drawDropShadowFromPath(pill, okArea, state.cHover == 1 ? 0x802EFFE9 : 0x592EFFE9, 12, [0, 0]);
+		g.setColour(0x142EFFE9);
+		g.fillRoundedRectangle(okArea, 14);
+		g.setColour(C_CYAN);
+		g.drawRoundedRectangle([356.5, 214.5, 121, 27], 13.5, 1);
+		lookText(g, state.cOk, "SansSemi", 13.5, 0.178, C_CYAN, [356, 221.2, 122, 13.5], "centred");
+	}
+
+	// ---- Wiring ----
+	Prev.data.hover = 0;
+	Name.data.hover = 0;
+	Next.data.hover = 0;
+	Save.data.hover = 0;
+
+	Prev.setPaintRoutine(function(g) { PresetBar.paintArrow(g, this, true); });
+	Next.setPaintRoutine(function(g) { PresetBar.paintArrow(g, this, false); });
+	Name.setPaintRoutine(function(g) { PresetBar.paintName(g, this); });
+	Save.setPaintRoutine(function(g) { PresetBar.paintSave(g, this); });
+	Confirm.setPaintRoutine(function(g) { PresetBar.paintConfirm(g); });
+
+	Prev.setMouseCallback(function(event)
+	{
+		this.data.hover = event.hover ? 1 : 0;
+
+		if (event.clicked && !event.rightClick)
+			PresetBar.step(-1);
+	});
+
+	Next.setMouseCallback(function(event)
+	{
+		this.data.hover = event.hover ? 1 : 0;
+
+		if (event.clicked && !event.rightClick)
+			PresetBar.step(1);
+	});
+
+	Save.setMouseCallback(function(event)
+	{
+		this.data.hover = event.hover ? 1 : 0;
+
+		if (event.clicked && !event.rightClick)
+			PresetBar.startSave();
+	});
+
+	Name.setMouseCallback(function(event)
+	{
+		if (isDefined(event.result))
+		{
+			PresetBar.menuChosen(event.result, event.itemText);
+			return;
+		}
+
+		this.data.hover = event.hover ? 1 : 0;
+	});
+
+	Confirm.setMouseCallback(function(event)
+	{
+		var b = PresetBar.confirmButtonAt(event.x, event.y);
+		var inBox = event.x >= 200 && event.x < 500 && event.y >= 138 && event.y < 262;
+
+		if (event.clicked)
+		{
+			if (b == 1)
+				PresetBar.confirmRun();
+			else if (b == 0 || !inBox)
+				PresetBar.confirmClose();
+
+			return;
+		}
+
+		if (b != PresetBar.state.cHover)
+		{
+			PresetBar.state.cHover = b;
+			this.repaint();
+		}
+	});
+
+	Name.setTimerCallback(function()
+	{
+		PresetBar.poll();
+	});
+
+	const var presetHandler = Engine.createUserPresetHandler();
+
+	presetHandler.setPostCallback(function(presetFile)
+	{
+		PresetBar.afterLoad(presetFile);
+	});
+
+	Confirm.showControl(false);
+	refresh();
+	Name.startTimer(400);
+}
+
+// ---- Preset list look --------------------------------------------------------
+const var lafMenu = Engine.createGlobalScriptLookAndFeel();
+
+lafMenu.registerFunction("drawPopupMenuBackground", function(g, obj)
+{
+	g.fillAll(0xFF12161C);
+	g.setColour(0x4D2EFFE9);
+	g.drawRect([0, 0, obj.width, obj.height], 1);
+});
+
+lafMenu.registerFunction("drawPopupMenuItem", function(g, obj)
+{
+	var a = obj.area;
+	var t = obj.text;
+
+	if (obj.isSeparator || t == "-")
+	{
+		g.setColour(0x1AFFFFFF);
+		g.fillRect([a[0] + 10, a[1] + Math.round(a[3] * 0.5), a[2] - 20, 1]);
+		return;
+	}
+
+	if (t.startsWith("#"))
+	{
+		t = t.substring(1, t.length);
+
+		if (t == t.toUpperCase())
+			lookText(g, t, "SansSemi", 11.5, 0.2, 0xFF6E7686, [a[0] + 12, a[1] + 7.0, a[2] - 24, 11.5], "left");
+		else
+			lookText(g, t, "SansMed", 13.0, 0.0, 0xFF6E7686, [a[0] + 12, a[1] + 5.5, a[2] - 24, 13.0], "left");
+
+		return;
+	}
+
+	if (obj.isHighlighted)
+	{
+		g.setColour(0x262EFFE9);
+		g.fillRoundedRectangle([a[0] + 4, a[1] + 1, a[2] - 8, a[3] - 2], 5);
+	}
+
+	g.setFont("SansMed", 14.0);
+
+	if (t.startsWith("Delete \""))
+		g.setColour(obj.isHighlighted ? 0xFFFF8A80 : 0xFFE0736B);
+	else if (t == PresetBar.displayName())
+		g.setColour(C_CYAN);
+	else
+		g.setColour(obj.isHighlighted ? C_TEXT : C_LABEL_HI);
+
+	g.drawAlignedText(t, [a[0] + 14, a[1], a[2] - 24, a[3]], "left");
+});
+
+lafMenu.registerFunction("getIdealPopupMenuItemSize", function(obj)
+{
+	if (obj.isSeparator || obj.text == "-")
+		return [220, 9];
+
+	return [220, 24];
+});
+
 // Lottie Animation
 const var lottieAnim = "3895.nT6K8C1UE0Vd.nGxfqgI.DoAwf3XkRtgPXU0EDYbxemsi9K7eKkTRYpSB5OLL5I++++u2Iv9AjZ.xE.hkU44gu5sS0J7ti54CsIyAmNmrPTZWryqughwnhS8ZaiyMRGBsqmnCmR1yre7b8UUWcEoaaZZKo7vRyjVExY1gvfprYKjZR8sJlx4+RpDbPgj4Na4yG8zku+bSdaxnb5oqFx+FS7SIFsxcrOU8llgNo1PAZ0UFY0OngFHmt2Q+ASehXyTibqpSxSK4U+bsEIV2sLaBo5wRguNKRECEm8+MNiPmH80U4e8h7edlREQPqyYgt5i1LoDg20YtWYggh48xCLRrxCdvgLwQDUvgwCWvAIHA8RFJnCKQl0zKLTTX04hH1P7PDNbHwCPLgJLwEz.F2XAnanHCVvDHgExfYnPDKgcoxFJHW07BGtXnviU+wPggYEyxEjFl33kkXhCYlwBM3GbXnngyrJO3XBGX3ANhCCEYvZ.EbvBGXfBQHwgghixnBU3BXfwvAGavDGFJLDS.CQ7vF3PENLTzvCLbvgDS7fDR3PDhfYHAQvgGT.iJXBEfwDO3.FPjANDgAXDAHbPALF.J7vD7vDH.FAvggCNr.HFIbXnnpL3vPwY3LxXoervggBwvAGWXBGFJ7Hm7aQjKadCGbDAEbXnHCGO.gEf3vvAGPXhHPgCCEGGGFJNpRcLN.BvPhGpvDPfGlvDSXgE3vvAGUvAFLbvgCS7fEbXn3PJV5vvAGXvAFhwp3IoH0pjrCYWOSpshdAQTyQFI+ToDol7MzbXQ+nJxMkqu4JgriCgt0cStASxnkiUaJYn39bwpbhEiG8irJ2VHiUc1j+p40T+daShDIUL+KGwjpqnNUmElqiIR33qrhlJ3H0ThXIQRa8Ok5noJTpedl7T6hgBEFJnqtl1TVzb1pHBuoFgxXYUzmJcsSkrypc2btgul8bUdWa5KSZMGah8FxFJpppmZtJkPM86TUGae5KhrOWui4KRzqcCEVF60rT0zwZQlTbxVEUaLi09LU730Isq2DYXeueoeA8xrZnaZVOi14wxyKRiNxnKwW8H0anG5joodgjWhxzaD0JMoFWtzjDgc7QcLWxzzawQGcjxZryMqT9R28Gyd2PQdSMxv9K8yzfODtvgMZHCGVPDVfBj.BGh.BJGjfnfDmMxEhXBiEFPXBR3BNDQBTgJLADvEYCElPhHRR4XE5rBDp.EHQEbfBhfDtvEXgHR.iEFOfQDVXBH7PDXb.EfAP.PXCILgCNPFd3BhXBHf0ckf2Ie5RSrgb+Uktjd0IQyDYymRVgUhcFBQy8vapoREXutrqFdwN1pGql2EsWb23rUVMmqj0e+pZi8rghgrpoIxFiR8YmcqxOU0HIqaUMW1HRI5VZys9it+N4RZtcU7wwNwRAs6kLQ9qp4YD07JptWaPpWjVyP0UI0qzkJeUFaBMmM2hprhkDNYo6tdmdMxG1+g5OK0Hr0MymM2IVUmYRPhvZVjZ3klVIZtrmbOd7VsYUFp+nTr8IuUzBMUqwcxpk8qQzgyUEmZbyg9qqnTzXnndIeYEilO4PqlLVqi9nMqFobL0Sp8aVJcSwWYkAGrlswpsI8HBqghyzr75740uVOqhVqope+hSr2eOKOTGqpycHpiItXddR2wrOF+srDkFQSYW5KrXVs7iRuSMu4kkopJtlaJOadk3ciJan.QBqdjbsqMn8W5k0aXcSoWZ50Y7zirAMo3Xn3xro3EUYmDaL5yjur4fUNEE2yW8lnbcNZ0td1RYpz3Q+Ck9V5rmK57TsYWk7wJWmVtnJdbUz+dHjloY..jgFnPDNzfqZtXC4qtSVseMKO4eMb5uesaauXlxnhnUVGQ5LKjhvCKUUFOxgTkeAemwrRlsoGl4sdo0ZLaY+QTJQtpfYsxU76G75Qo6U3X6lz0i+whnYihoyZhXccTY8kj0Fa0Gdakl6upkSGxe9UYj5rH8Ra0PypUsruZnf8twsvZIZSKLKhj76JdjqqZVY8x6kHLkrxEDsJSVYxVX9rCN02nipPjYTgUrPH8NzzqLgkHqvdwEWLdnJ9Ruyn5rls4JO0GrhgRNSeqbndS1ypZmtW53jjqkNqgSmr0qegF6M4iQiX+iuxuisbUNrF80glZp7RjLkaSIIR09BpnpxQLqxDIqkSo2hjvZm80xPweMaDUGRR05klRHY6oTZW9o9HgHpDCeG70SEypdiQkRjp7RtdOsuwiylnullyhhmDuUnclz42EeGN84qTClyqeUatWaJ9pdRdZdOKUWQ2mq24e+kPzEQVIw5U9EoJw9i34pdn4x6pDZApSGxTp1VZC.BCDPG.iNL.PfCFKRlfXTyFyAyHCjHKG.wTLDgXHFhPC.QP.D..Jg3BqqUg2hQIFDBmth4NzwgAaWCWY9YqxGB+3wJY9hcbnu5NR6pi3oQt6gatb8fKTbVONIO6wl83LibiHMmoc8WZeRT838RTXVD6PhT1v3SkK2nTSWT0zBfr8hJg+TwXXtpjvgRN9pIu8+YNNbI7uqo6Fb59D4v8kSCYpr6Z1TcvJvHIb.KvRYAWtHHey4ilMYIae0iMg+54brWiB40pN9GUx6VpiUN+jWQBnJtcAhQBKeGQ67ofCKGFUkNFF1a.DirJUtWPS37sG6gKynoFHU6boieFY7huGFkDJRSzBu2vg0f5rC3U3qmdsZ2IAaYvZBYWZgQLYnoxBCbCZmOwGJSvKqaEM37da.7ckHR4.JXL5XrFJRYS90c+ak7yUwsLHe0QhDJT1Vb7CbHQ494ZtlZmaX519994PrTmj..kPKI86OhWX8Awt3Lq316BdS1AylSTw.dTF3uM+FDE5SRaqpW+wZV9isahpS2XU7LQVUTlbFuZodZfjU7OLbA6o119zB3hzV6DCMlWqpKqtxdFaljpyR3sibNYFVfLn523wj7nGHFGsPVek6rOK0klXxsL2Kd5KHi1k9rnHQyAYUjOibhjm.JQGiVZpcJpK2IV9ErWrWA1h8y7yqi4P3DVSLYcLi8FSv4dlKIDxrqLV7XpyuHio9BkSR1PnAH+bYxkWJOdqbnSMP+CjeZjuQAKA0NBdri9v2ctHA1OOt4Rq5wzZPVD0v07QbtD8Loe28uvbNfYVK5RswmS.4zo+fty+9FE8w4HObqNeRU3KT1IdttY5cIPYlUWIfif7KzywHyJ+FrdQlrPMhywOlTHDX2v6sdwAnZVKyhHglHZ7uicfOhmOJVUE+oDCeRbrjMREHwF2lSgxCO9Q5ozP1U5fyhXOBTQ5icVHEVfFdERmVKz+SVh.iIDbsxNa+KChElNiq48n.Ms42jJZGq7K4v+FL1vIzaL7gJbihM.viqkabYzAhlGxze0y+hjdaabjcHX+CrC014A81dYPbjg7NPxQmm5yEI4pw8AsbcBuF0rIBofAhcOXkEtpx3RkUs.uYgQSjQAMT7gYnYA3CasZIIzrHmYkSx3Q+iSLkVknHPcq2Vsqqiaegdg.XjsVQZtn8yC+UNZy.94OiQG9Cp6uuMvd1zzRSqc7i39ZAbxSxGWGT0X15OEYxb2jUdpx5flc9w.vvPJBntqy4ib8oZFksAHADZlhPY1KghA3aQykaibd8SvxrczImzPg0jo0CUqTZsvWH02xJHwmirEoCKlSDBNfxSP0AC32IY+Df.cu.cJyvaiTPWr2efp6IQ5LW5SW+xHUTToqhkz5Q8IkmjnUHU9PHlftswdW3imExb3xi20SjRyTnjGEMyCg3Wd2HifemMvSSErSaFP.g0yKglQJQcvZ0qnVJg3oc2dzfz3AZkIT2umUthhgUclXmllfLtt4jkwXW3B6NLtiJquQO60GfmKc7jXsEaUrZbbISit5t1MTjW9CbXDrryTSsvqclCgygPpybhYqjWNFW2.vMxhvD4jE4dOxz2hi7OGbOcq0WgF.kO3ZMhNAPXG5qx63BchzK4xvBkQO4Ya5JAukguM7v9PLRQkTeA9C1nEOGYr1LxpqsSCEkFGXHO9EQha2JefRfQwG4rDfDMwEagSKCbOsMtuUabalRtHrLpEDSIZAdTp8KNJmf97YhcsW18w.E00D7vSGo6G8zC1ih9w4RIxgHr8fvf1SFgoa+xNGChEBoWLw78GuPuIV7dhw6IXJ5AIKCUw5u3eAjtMHOtd3pKUDRiIbP6ThfIDwbcm08rKmPjigWYfjch+PpCOalgqi.rBzrp1oClQQLb9s0fDUpd.Jm+cQn8XmJVicmQL5YHFmPzuhqZ4A.2L+yIxgHpv+wnv+4d69xELsfv2cByi.OdsUsfzN+8rEaDcxNnsLySChYIKGnkEn5P.n8VeBaCfP5mgYT3gYrnJaFRwxDU3PUvircdP.QiJK2ODsx8W7Xd.2tpHljG24KlHW3g5W9V0G6a2CRMk95ybrMTC9+xVwAkrpRXIseTZ1RtqaeAeAkY2tFlGnuEoSThrTrbhAL8A2WcKs3TRsUiErlZoj897cRSPWDA28BGU5Bz+fPmOCFWtYJDT+wIaiLqRoHv8yRb8CM3PNiRhN8TytyE4bMGi.W.tstvQprFb3RFjaEL.IpmRhaBBHgrs6PoVbLD3eCi1v0bFRD.2rQ0jArwCu2mxGSwJnIpZK0LjTWWgDvmiwAlSNjjK6E.5nw.qQEvjn9fZS+r9Xar+ReHUtSElIag8+TE.P.Mtu7Xf7Huijl58ZYNUCZGJiHMa0ot7yPUXrrda6whGlwMsZXB20Om40Uu07uiD4rpUcQ1rUvUIe67cbFkTNIGlt.7gDdU38A7E1+4iFNMZCodBKuCMNOR7lwJp8iUJKrxinOrlNhz2jUkO01f2ENwAd+sQgByMwp.yfnSZrVAhtemG8U5c7xexd2gbEliobOZyryvHikUyW0feQ9rnL7AyZ.RMfvlmI+Kx3dcpN8GI+6kO7j5jK5Ot6ohj0jwckuVuln5p9RPh7BFrUiT4PCb4EuhjhF414qSoperRbVa1JZgYRaLglNSE2fWp8YTEMdWEiEtOdWC691MuYlCroiNydU6Ep30QF4isAcc+Vguf6n8Mtg6OpAqVRO0Cv0jALU5dOz+6NsvVwvInlOMm7XEB.229dvhVc+0sQMdgZmP.WGFyilKlKrqEUvQUPzFYpQqFFDhdKNRsZTYXZqrH2Shel.RP5Q9ApyJ81k7NuBLNgjFV3rtvxx4BlUMmlQOQD1lgkjjqY7pX6C"
 

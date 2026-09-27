@@ -34,7 +34,7 @@
   <ForceStereoOutput value="No"/>
   <AdminPermissions value="No"/>
   <EmbedUserPresets value="Yes"/>
-  <OverwriteOldUserPresets value="No"/>
+  <OverwriteOldUserPresets value="Yes"/>
   <EnableGlobalPreprocessor value="No"/>
   <UseGlobalAppDataFolderWindows value="No"/>
   <UseGlobalAppDataFolderMacOS value="No"/>

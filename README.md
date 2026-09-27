@@ -11,7 +11,10 @@ Windows VST3. A Mac version is coming soon.
 Version 1.1 is the biggest update yet:
 
 - Redesigned interface, with zoom at 100, 125 and 150 percent
+- Presets: 13 factory presets, and save your own with the new preset bar
 - New HALL reverb engine next to the original sound, which is now called CLASSIC. HALL is the new default.
+- Modulation is now a lush stereo chorus on the reverb
+- Diffusion works across the whole knob, from separate echoes to a smooth wash
 - Sensitivity control, so the ducking also reacts to quiet sounds
 - Input and Output level controls
 - Dry/Wet keeps the overall volume steady as you blend

@@ -9,18 +9,18 @@
         <Processor Type="ScriptProcessor" ID="Interface" Bypassed="0">
           <ChildProcessors/>
           <Content>
-            <Control type="ScriptSlider" id="Ducking" value="0.6200000047683716"/>
-            <Control type="ScriptSlider" id="Knob2" value="47.83000183105469"/>
-            <Control type="ScriptSlider" id="Sensitivity" value="6.0"/>
-            <Control type="ScriptSlider" id="Knob3" value="0.8399999737739563"/>
-            <Control type="ScriptSlider" id="Knob4" value="0.3300000131130219"/>
-            <Control type="ScriptSlider" id="Knob5" value="1.0"/>
-            <Control type="ScriptSlider" id="Knob6" value="0.0"/>
-            <Control type="ScriptSlider" id="Knob7" value="0.6299999952316284"/>
-            <Control type="ScriptSlider" id="Knob8" value="0.6200000047683716"/>
+            <Control type="ScriptSlider" id="Ducking" value="0.5"/>
+            <Control type="ScriptSlider" id="Knob2" value="47.2400016784668"/>
+            <Control type="ScriptSlider" id="Sensitivity" value="9.0"/>
+            <Control type="ScriptSlider" id="Knob3" value="0.8199999928474426"/>
+            <Control type="ScriptSlider" id="Knob4" value="0.7400000095367432"/>
+            <Control type="ScriptSlider" id="Knob5" value="0.3199999928474426"/>
+            <Control type="ScriptSlider" id="Knob6" value="0.2000000029802322"/>
+            <Control type="ScriptSlider" id="Knob7" value="0.7599999904632568"/>
+            <Control type="ScriptSlider" id="Knob8" value="0.6399999856948853"/>
             <Control type="ScriptSlider" id="Input" value="0.0"/>
             <Control type="ScriptSlider" id="Output" value="0.0"/>
-            <Control type="ScriptSlider" id="DryWet" value="0.6200000047683716"/>
+            <Control type="ScriptSlider" id="DryWet" value="0.2800000011920929"/>
             <Control type="ScriptPanel" id="ModePanel" value="1.0"/>
           </Content>
           <UIData Source="DuckingSpaceUIData"/>

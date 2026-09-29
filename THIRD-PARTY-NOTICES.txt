@@ -1,0 +1,58 @@
+DuckingSpace - third-party notices
+==================================
+
+DuckingSpace is Copyright (C) 2024-2026 Sonic Skunk. It is free software under
+the GNU General Public License version 3 (see LICENSE).
+Source code: https://github.com/SonicSkunk/DuckingSpace
+
+DuckingSpace is built with the following third-party software.
+
+HISE and JUCE
+  https://hise.dev - used under the GNU General Public License version 3.
+
+Faust libraries (https://faust.grame.fr)
+  - reverbs.lib jpverb by Julian Parker, bug fixes and minor interface changes
+    by Till Bovermann. GPL2+.
+  - maths.lib, basics.lib, delays.lib, oscillators.lib, platform.lib,
+    routes.lib, signals.lib: Copyright GRAME, LGPL with the Faust exception for
+    compiled code.
+  - filters.lib and delays.lib functions by Julius O. Smith III,
+    Copyright (C) 2003-2019 Julius O. Smith III. STK-4.3 license (below).
+  - routes.lib hadamard by Remy Muller, revised by Romain Michon.
+  - Parts of the HALL and CLASSIC reverbs are adapted from reverbs.lib:
+    zita_rev_fdn, Copyright (C) 2003-2017 Julius O. Smith III, and
+    dattorro_rev by Jakob Zerbian. STK-4.3 license (below).
+
+Fonts
+  - DuckSans is Barlow Semi Condensed, Copyright 2017 The Barlow Project
+    Authors. SIL Open Font License 1.1 (Images/Fonts/OFL-DuckSans.txt).
+  - DuckMono is JetBrains Mono, Copyright 2020 The JetBrains Mono Project
+    Authors. SIL Open Font License 1.1 (Images/Fonts/OFL-DuckMono.txt).
+
+
+STK-4.3 license
+---------------
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+Any person wishing to distribute modifications to the Software is asked to send
+the modifications to the original developer so that they can be incorporated
+into the canonical version.  For software copyrighted by Julius O. Smith III,
+email your modifications to <jos@ccrma.stanford.edu>.  This is, however, not a
+binding provision of this license.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

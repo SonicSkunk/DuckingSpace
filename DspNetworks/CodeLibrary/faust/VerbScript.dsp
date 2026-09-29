@@ -1,4 +1,6 @@
-// DuckingSpace reverb: CLASSIC
+// DuckingSpace. Copyright (C) 2024-2026 Sonic Skunk. GNU GPL v3, see LICENSE.
+// Parts adapted from dattorro_rev in the Faust reverbs.lib
+// (STK-4.3 license), see THIRD-PARTY-NOTICES.txt.
 import("stdfaust.lib");
 
 decay = hslider("Decay", 0.5, 0.0, 1.0, 0.001);
@@ -10,12 +12,9 @@ depth = hslider("Modulation", 0.32, 0.0, 1.0, 0.001);
 seconds = 0.8 + 11.2 * pow(decay, 2.353);
 t60 = max(0.75, (max(1.7, seconds) - 0.1) / 1.9) * tcomp;
 
-// Diffusion: eased in below the default (0.84), unchanged above it.
 dq = select2(diff > 0.84, 0.84 * pow(diff / 0.84, 2.5), diff) : si.smoo;
-// Low diffusion shortens the tail, so lengthen it back a little.
 tcomp = 1.0 + 0.15 * (1.0 - pow(min(dq, 0.84) / 0.84, 3.0));
 
-// Modulation: eased in so low settings stay subtle, same pitch swing at any sample rate.
 mdepth = 0.6 * pow(depth, 1.75) * min(ma.SR, 192000.0) / 44100.0 : si.smoo;
 
 g1 = min(0.8, 0.75 * dq / 0.84);
@@ -26,8 +25,6 @@ diffR = ap(223, g1) : ap(167, g1) : ap(587, g2) : ap(431, g2);
 pre = de.delay(8192, int(0.02 * ma.SR));
 hp = fi.highpass(2, 80);
 
-// Modulation, part 2: a stereo chorus on the reverb. This is the part you hear.
-// The knob raises the chorus level (full at 60%) and its depth (up to 3 ms of swing).
 amt = depth : si.smoo;
 chTheta = min(1.0, amt / 0.6) * ma.PI / 4.0;
 chSwing = 0.003 * pow(amt, 1.5) * ma.SR;

@@ -3,8 +3,8 @@
 /DspNetworks/ThirdParty/src_/
 /PooledResources/
 /Presets/
-/test sample.wav
-/Claude outputs/
+/*.wav
+/*outputs/
 
 Thumbs.db
 desktop.ini

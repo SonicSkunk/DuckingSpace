@@ -1,4 +1,6 @@
-// DuckingSpace reverb: HALL (zita-rev1 structure, with size and modulation)
+// DuckingSpace. Copyright (C) 2024-2026 Sonic Skunk. GNU GPL v3, see LICENSE.
+// Parts adapted from zita_rev_fdn and dattorro_rev in the Faust reverbs.lib
+// (STK-4.3 license), see THIRD-PARTY-NOTICES.txt.
 import("stdfaust.lib");
 
 decay = hslider("Decay", 0.5, 0.0, 1.0, 0.001);
@@ -14,10 +16,8 @@ seconds = 0.8 + 11.2 * pow(decay, 2.353);
 scale = (0.6 + 1.25 * size) : si.smooth(ba.tau2pole(0.3));
 f1 = 200.0;
 f2 = min(16000.0 * pow(2.0, -4.5 * damp), 0.45 * ma.SR);
-// Modulation: up to 0.65 ms of delay swing, eased in so low settings stay subtle.
 modSamples = depth * depth * 0.00065 * ma.SR : si.smoo;
 
-// Diffusion: eased in below the default (0.84), unchanged above it.
 dq = select2(diff > 0.84, 0.84 * pow(diff / 0.84, 2.5), diff) : si.smoo;
 
 g1 = min(0.8, 0.75 * dq / 0.84);
@@ -66,9 +66,6 @@ with {
 distrib = _, _ <: _, _, *(-1), *(-1), _, _, *(-1), *(-1);
 outmix = !, ro.butterfly(2), !, par(i, 4, !);
 
-
-// Modulation, part 2: a stereo chorus on the reverb. This is the part you hear.
-// The knob raises the chorus level (full at 60%) and its depth (up to 3 ms of swing).
 amt = depth : si.smoo;
 chTheta = min(1.0, amt / 0.6) * ma.PI / 4.0;
 chSwing = 0.003 * pow(amt, 1.5) * ma.SR;

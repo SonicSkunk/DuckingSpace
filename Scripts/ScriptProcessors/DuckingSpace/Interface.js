@@ -1,15 +1,13 @@
-// DuckingSpace
+// DuckingSpace. Copyright (C) 2024-2026 Sonic Skunk. GNU GPL v3, see LICENSE.
 
 Content.makeFrontInterface(700, 400);
 
-// ---- Fonts -----------------------------------------------------------------
 Engine.loadFontAs("{PROJECT_FOLDER}Fonts/Duck.ttf", "Duck");
 Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckSans-SemiBold.ttf", "SansSemi");
 Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckSans-Medium.ttf", "SansMed");
 Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckMono-Medium.ttf", "MonoMed");
 Engine.loadFontAs("{PROJECT_FOLDER}Fonts/DuckMono-Bold.ttf", "MonoBold");
 
-// ---- Colours ---------------------------------------------------------------
 const var C_BG = 0xFF0E1015;
 const var C_PURPLE = 0xFF762EFF;
 const var C_CYAN = 0xFF2EFFE9;
@@ -21,7 +19,6 @@ const var C_GROOVE = 0xFF06070A;
 
 const var ARC = 2.4;
 
-// ---- Drawing helpers -------------------------------------------------------
 inline function lookStroke(t)
 {
 	return {"Thickness": t, "EndCapStyle": "rounded", "JointStyle": "curved"};
@@ -110,7 +107,6 @@ inline function lookPercent(v)
 const var ModePanel = Content.getComponent("ModePanel");
 const var DecayKnob = Content.getComponent("Knob3");
 
-// real decay time in seconds; CLASSIC cannot go below 1.7 s
 inline function lookDecaySeconds(v)
 {
 	local s = 0.8 + 11.2 * Math.pow(v, 2.353);
@@ -144,7 +140,6 @@ inline function lookDb(v)
 	return (r > 0.0 ? "+" : "") + Engine.doubleToString(r, 1) + " dB";
 }
 
-// ---- Background ------------------------------------------------------------
 const var PanelBG = Content.getComponent("PanelBG");
 
 PanelBG.setPaintRoutine(function(g)
@@ -173,7 +168,6 @@ PanelBG.setPaintRoutine(function(g)
 	g.drawAlignedText("DuckingSpace", [18, 10, 330, 34], "left");
 });
 
-// ---- Ducking ---------------------------------------------------------------
 const var lafDucking = Content.createLocalLookAndFeel();
 
 lafDucking.registerFunction("drawRotarySlider", function(g, obj)
@@ -193,7 +187,6 @@ lafDucking.registerFunction("drawRotarySlider", function(g, obj)
 
 Content.getComponent("Ducking").setLocalLookAndFeel(lafDucking);
 
-// ---- Speed -----------------------------------------------------------------
 const var lafSpeed = Content.createLocalLookAndFeel();
 
 lafSpeed.registerFunction("drawRotarySlider", function(g, obj)
@@ -217,7 +210,6 @@ lafSpeed.registerFunction("drawRotarySlider", function(g, obj)
 
 Content.getComponent("Knob2").setLocalLookAndFeel(lafSpeed);
 
-// ---- Reverb knobs ----------------------------------------------------------
 const var lafReverb = Content.createLocalLookAndFeel();
 
 lafReverb.registerFunction("drawRotarySlider", function(g, obj)
@@ -242,7 +234,6 @@ const var reverbKnobs = ["Knob3", "Knob4", "Knob5", "Knob6", "Knob7", "Knob8"];
 for (k in reverbKnobs)
 	Content.getComponent(k).setLocalLookAndFeel(lafReverb);
 
-// ---- Input / Output / Dry/Wet ------------------------------------------------
 inline function lookMini(g, obj, label, text, bipolar)
 {
 	local cx = 82.0;
@@ -276,7 +267,6 @@ Content.getComponent("Input").setLocalLookAndFeel(lafIO);
 Content.getComponent("Output").setLocalLookAndFeel(lafIO);
 Content.getComponent("DryWet").setLocalLookAndFeel(lafIO);
 
-// ---- Sensitivity -------------------------------------------------------------
 const var lafSens = Content.createLocalLookAndFeel();
 
 lafSens.registerFunction("drawLinearSlider", function(g, obj)
@@ -318,7 +308,6 @@ lafSens.registerFunction("drawLinearSlider", function(g, obj)
 
 Content.getComponent("Sensitivity").setLocalLookAndFeel(lafSens);
 
-// ---- Meter -----------------------------------------------------------------
 const var GRMeter = Content.getComponent("GRMeter");
 const var duckBuffer = Synth.getDisplayBufferSource("Script FX1").getDisplayBuffer(0);
 duckBuffer.setActive(true);
@@ -350,7 +339,6 @@ GRMeter.setPaintRoutine(function(g)
 
 GRMeter.setTimerCallback(function()
 {
-	// getReadBuffer() is not safe while the buffer is missing, createPath() is
 	if (duckBuffer.createPath([0, 0, 10, 10], [0.0, 1.0, 0, -1], 0.0).getBounds(1.0)[2] <= 0.0)
 		return;
 
@@ -373,7 +361,6 @@ GRMeter.setTimerCallback(function()
 
 GRMeter.startTimer(40);
 
-// ---- Reverb type -------------------------------------------------------------
 const var MODE_TEXT = ["CLASSIC", "HALL"];
 const var MODE_X = [0, 84];
 const var MODE_W = [78, 62];
@@ -449,7 +436,6 @@ ModePanel.setMouseCallback(function(event)
 	}
 });
 
-// ---- Zoom ------------------------------------------------------------------
 const var ZoomPanel = Content.getComponent("ZoomPanel");
 const var ZOOMS = [1.0, 1.25, 1.5];
 const var ZOOM_TEXT = ["100%", "125%", "150%"];
@@ -521,7 +507,6 @@ ZoomPanel.setMouseCallback(function(event)
 	}
 });
 
-// ---- Website ---------------------------------------------------------------
 inline function onButton1Control(component, value)
 {
 	Engine.openWebsite("www.sonicskunk.com");
@@ -529,7 +514,6 @@ inline function onButton1Control(component, value)
 
 Content.getComponent("Button1").setControlCallback(onButton1Control);
 
-// ---- Help text -------------------------------------------------------------
 namespace TooltipPanel
 {
 	const var Tooltip = Content.getComponent("Tooltip");
@@ -561,10 +545,6 @@ namespace TooltipPanel
 	Tooltip.startTimer(250);
 }
 
-// ---- Presets ---------------------------------------------------------------
-// Factory presets live in UserPresets/Factory and are built into the plugin.
-// SAVE in the plugin writes to User (the only folder a user can delete from).
-// SAVE inside HISE writes to Factory, so that is how factory presets are made.
 namespace PresetBar
 {
 	const var Prev = Content.getComponent("PresetPrev");
@@ -616,7 +596,6 @@ namespace PresetBar
 		return rel.startsWith("User/");
 	}
 
-	// Default first, then A to Z. User presets go in their own list.
 	inline function scan()
 	{
 		local all = Engine.getUserPresetList();
@@ -644,8 +623,6 @@ namespace PresetBar
 		state.user = u;
 	}
 
-	// Works out which preset is loaded from the name HISE remembers.
-	// A DAW session restores that name without telling the script, so this runs on a timer too.
 	inline function resolveCurrent()
 	{
 		local n = Engine.getCurrentUserPresetName();
@@ -696,8 +673,6 @@ namespace PresetBar
 		return "No preset";
 	}
 
-	// Every line is a plain item, so a click always maps to the line it was on.
-	// "#" lines are headings and "-" is a divider; both are drawn by lafMenu and do nothing when clicked.
 	inline function rebuildMenu()
 	{
 		local lines = [];
@@ -839,7 +814,6 @@ namespace PresetBar
 		refresh();
 	}
 
-	// Letters, numbers and a few safe symbols only, so the name is a legal file name everywhere.
 	inline function cleanName(text)
 	{
 		local out = "";
@@ -948,8 +922,6 @@ namespace PresetBar
 		local idx = result - 1;
 		local a = "";
 
-		Console.print("Preset list: clicked " + result + " (" + itemText + ")");
-
 		if (idx < 0 || idx >= state.menuActs.length)
 			return;
 
@@ -995,7 +967,6 @@ namespace PresetBar
 		}
 	}
 
-	// ---- Drawing ----
 	inline function pillOutline(g, w, colour)
 	{
 		g.setColour(colour);
@@ -1118,7 +1089,6 @@ namespace PresetBar
 		lookText(g, state.cOk, "SansSemi", 13.5, 0.178, C_CYAN, [356, 221.2, 122, 13.5], "centred");
 	}
 
-	// ---- Wiring ----
 	Prev.data.hover = 0;
 	Name.data.hover = 0;
 	Next.data.hover = 0;
@@ -1204,7 +1174,6 @@ namespace PresetBar
 	Name.startTimer(400);
 }
 
-// ---- Preset list look --------------------------------------------------------
 const var lafMenu = Engine.createGlobalScriptLookAndFeel();
 
 lafMenu.registerFunction("drawPopupMenuBackground", function(g, obj)
@@ -1264,7 +1233,6 @@ lafMenu.registerFunction("getIdealPopupMenuItemSize", function(obj)
 	return [220, 24];
 });
 
-// Lottie Animation
 const var lottieAnim = "3895.nT6K8C1UE0Vd.nGxfqgI.DoAwf3XkRtgPXU0EDYbxemsi9K7eKkTRYpSB5OLL5I++++u2Iv9AjZ.xE.hkU44gu5sS0J7ti54CsIyAmNmrPTZWryqughwnhS8ZaiyMRGBsqmnCmR1yre7b8UUWcEoaaZZKo7vRyjVExY1gvfprYKjZR8sJlx4+RpDbPgj4Na4yG8zku+bSdaxnb5oqFx+FS7SIFsxcrOU8llgNo1PAZ0UFY0OngFHmt2Q+ASehXyTibqpSxSK4U+bsEIV2sLaBo5wRguNKRECEm8+MNiPmH80U4e8h7edlREQPqyYgt5i1LoDg20YtWYggh48xCLRrxCdvgLwQDUvgwCWvAIHA8RFJnCKQl0zKLTTX04hH1P7PDNbHwCPLgJLwEz.F2XAnanHCVvDHgExfYnPDKgcoxFJHW07BGtXnviU+wPggYEyxEjFl33kkXhCYlwBM3GbXnngyrJO3XBGX3ANhCCEYvZ.EbvBGXfBQHwgghixnBU3BXfwvAGavDGFJLDS.CQ7vF3PENLTzvCLbvgDS7fDR3PDhfYHAQvgGT.iJXBEfwDO3.FPjANDgAXDAHbPALF.J7vD7vDH.FAvggCNr.HFIbXnnpL3vPwY3LxXoervggBwvAGWXBGFJ7Hm7aQjKadCGbDAEbXnHCGO.gEf3vvAGPXhHPgCCEGGGFJNpRcLN.BvPhGpvDPfGlvDSXgE3vvAGUvAFLbvgCS7fEbXn3PJV5vvAGXvAFhwp3IoH0pjrCYWOSpshdAQTyQFI+ToDol7MzbXQ+nJxMkqu4JgriCgt0cStASxnkiUaJYn39bwpbhEiG8irJ2VHiUc1j+p40T+daShDIUL+KGwjpqnNUmElqiIR33qrhlJ3H0ThXIQRa8Ok5noJTpedl7T6hgBEFJnqtl1TVzb1pHBuoFgxXYUzmJcsSkrypc2btgul8bUdWa5KSZMGah8FxFJpppmZtJkPM86TUGae5KhrOWui4KRzqcCEVF60rT0zwZQlTbxVEUaLi09LU730Isq2DYXeueoeA8xrZnaZVOi14wxyKRiNxnKwW8H0anG5joodgjWhxzaD0JMoFWtzjDgc7QcLWxzzawQGcjxZryMqT9R28Gyd2PQdSMxv9K8yzfODtvgMZHCGVPDVfBj.BGh.BJGjfnfDmMxEhXBiEFPXBR3BNDQBTgJLADvEYCElPhHRR4XE5rBDp.EHQEbfBhfDtvEXgHR.iEFOfQDVXBH7PDXb.EfAP.PXCILgCNPFd3BhXBHf0ckf2Ie5RSrgb+Uktjd0IQyDYymRVgUhcFBQy8vapoREXutrqFdwN1pGql2EsWb23rUVMmqj0e+pZi8rghgrpoIxFiR8YmcqxOU0HIqaUMW1HRI5VZys9it+N4RZtcU7wwNwRAs6kLQ9qp4YD07JptWaPpWjVyP0UI0qzkJeUFaBMmM2hprhkDNYo6tdmdMxG1+g5OK0Hr0MymM2IVUmYRPhvZVjZ3klVIZtrmbOd7VsYUFp+nTr8IuUzBMUqwcxpk8qQzgyUEmZbyg9qqnTzXnndIeYEilO4PqlLVqi9nMqFobL0Sp8aVJcSwWYkAGrlswpsI8HBqghyzr75740uVOqhVqope+hSr2eOKOTGqpycHpiItXddR2wrOF+srDkFQSYW5KrXVs7iRuSMu4kkopJtlaJOadk3ciJan.QBqdjbsqMn8W5k0aXcSoWZ50Y7zirAMo3Xn3xro3EUYmDaL5yjur4fUNEE2yW8lnbcNZ0td1RYpz3Q+Ck9V5rmK57TsYWk7wJWmVtnJdbUz+dHjloY..jgFnPDNzfqZtXC4qtSVseMKO4eMb5uesaauXlxnhnUVGQ5LKjhvCKUUFOxgTkeAemwrRlsoGl4sdo0ZLaY+QTJQtpfYsxU76G75Qo6U3X6lz0i+whnYihoyZhXccTY8kj0Fa0Gdakl6upkSGxe9UYj5rH8Ra0PypUsruZnf8twsvZIZSKLKhj76JdjqqZVY8x6kHLkrxEDsJSVYxVX9rCN02nipPjYTgUrPH8NzzqLgkHqvdwEWLdnJ9Ruyn5rls4JO0GrhgRNSeqbndS1ypZmtW53jjqkNqgSmr0qegF6M4iQiX+iuxuisbUNrF80glZp7RjLkaSIIR09BpnpxQLqxDIqkSo2hjvZm80xPweMaDUGRR05klRHY6oTZW9o9HgHpDCeG70SEypdiQkRjp7RtdOsuwiylnullyhhmDuUnclz42EeGN84qTClyqeUatWaJ9pdRdZdOKUWQ2mq24e+kPzEQVIw5U9EoJw9i34pdn4x6pDZApSGxTp1VZC.BCDPG.iNL.PfCFKRlfXTyFyAyHCjHKG.wTLDgXHFhPC.QP.D..Jg3BqqUg2hQIFDBmth4NzwgAaWCWY9YqxGB+3wJY9hcbnu5NR6pi3oQt6gatb8fKTbVONIO6wl83LibiHMmoc8WZeRT838RTXVD6PhT1v3SkK2nTSWT0zBfr8hJg+TwXXtpjvgRN9pIu8+YNNbI7uqo6Fb59D4v8kSCYpr6Z1TcvJvHIb.KvRYAWtHHey4ilMYIae0iMg+54brWiB40pN9GUx6VpiUN+jWQBnJtcAhQBKeGQ67ofCKGFUkNFF1a.DirJUtWPS37sG6gKynoFHU6boieFY7huGFkDJRSzBu2vg0f5rC3U3qmdsZ2IAaYvZBYWZgQLYnoxBCbCZmOwGJSvKqaEM37da.7ckHR4.JXL5XrFJRYS90c+ak7yUwsLHe0QhDJT1Vb7CbHQ494ZtlZmaX519994PrTmj..kPKI86OhWX8Awt3Lq316BdS1AylSTw.dTF3uM+FDE5SRaqpW+wZV9isahpS2XU7LQVUTlbFuZodZfjU7OLbA6o119zB3hzV6DCMlWqpKqtxdFaljpyR3sibNYFVfLn523wj7nGHFGsPVek6rOK0klXxsL2Kd5KHi1k9rnHQyAYUjOibhjm.JQGiVZpcJpK2IV9ErWrWA1h8y7yqi4P3DVSLYcLi8FSv4dlKIDxrqLV7XpyuHio9BkSR1PnAH+bYxkWJOdqbnSMP+CjeZjuQAKA0NBdri9v2ctHA1OOt4Rq5wzZPVD0v07QbtD8Loe28uvbNfYVK5RswmS.4zo+fty+9FE8w4HObqNeRU3KT1IdttY5cIPYlUWIfif7KzywHyJ+FrdQlrPMhywOlTHDX2v6sdwAnZVKyhHglHZ7uicfOhmOJVUE+oDCeRbrjMREHwF2lSgxCO9Q5ozP1U5fyhXOBTQ5icVHEVfFdERmVKz+SVh.iIDbsxNa+KChElNiq48n.Ms42jJZGq7K4v+FL1vIzaL7gJbihM.viqkabYzAhlGxze0y+hjdaabjcHX+CrC014A81dYPbjg7NPxQmm5yEI4pw8AsbcBuF0rIBofAhcOXkEtpx3RkUs.uYgQSjQAMT7gYnYA3CasZIIzrHmYkSx3Q+iSLkVknHPcq2Vsqqiaegdg.XjsVQZtn8yC+UNZy.94OiQG9Cp6uuMvd1zzRSqc7i39ZAbxSxGWGT0X15OEYxb2jUdpx5flc9w.vvPJBntqy4ib8oZFksAHADZlhPY1KghA3aQykaibd8SvxrczImzPg0jo0CUqTZsvWH02xJHwmirEoCKlSDBNfxSP0AC32IY+Df.cu.cJyvaiTPWr2efp6IQ5LW5SW+xHUTToqhkz5Q8IkmjnUHU9PHlftswdW3imExb3xi20SjRyTnjGEMyCg3Wd2HifemMvSSErSaFP.g0yKglQJQcvZ0qnVJg3oc2dzfz3AZkIT2umUthhgUclXmllfLtt4jkwXW3B6NLtiJquQO60GfmKc7jXsEaUrZbbISit5t1MTjW9CbXDrryTSsvqclCgygPpybhYqjWNFW2.vMxhvD4jE4dOxz2hi7OGbOcq0WgF.kO3ZMhNAPXG5qx63BchzK4xvBkQO4Ya5JAukguM7v9PLRQkTeA9C1nEOGYr1LxpqsSCEkFGXHO9EQha2JefRfQwG4rDfDMwEagSKCbOsMtuUabalRtHrLpEDSIZAdTp8KNJmf97YhcsW18w.E00D7vSGo6G8zC1ih9w4RIxgHr8fvf1SFgoa+xNGChEBoWLw78GuPuIV7dhw6IXJ5AIKCUw5u3eAjtMHOtd3pKUDRiIbP6ThfIDwbcm08rKmPjigWYfjch+PpCOalgqi.rBzrp1oClQQLb9s0fDUpd.Jm+cQn8XmJVicmQL5YHFmPzuhqZ4A.2L+yIxgHpv+wnv+4d69xELsfv2cByi.OdsUsfzN+8rEaDcxNnsLySChYIKGnkEn5P.n8VeBaCfP5mgYT3gYrnJaFRwxDU3PUvircdP.QiJK2ODsx8W7Xd.2tpHljG24KlHW3g5W9V0G6a2CRMk95ybrMTC9+xVwAkrpRXIseTZ1RtqaeAeAkY2tFlGnuEoSThrTrbhAL8A2WcKs3TRsUiErlZoj897cRSPWDA28BGU5Bz+fPmOCFWtYJDT+wIaiLqRoHv8yRb8CM3PNiRhN8TytyE4bMGi.W.tstvQprFb3RFjaEL.IpmRhaBBHgrs6PoVbLD3eCi1v0bFRD.2rQ0jArwCu2mxGSwJnIpZK0LjTWWgDvmiwAlSNjjK6E.5nw.qQEvjn9fZS+r9Xar+ReHUtSElIag8+TE.P.Mtu7Xf7Huijl58ZYNUCZGJiHMa0ot7yPUXrrda6whGlwMsZXB20Om40Uu07uiD4rpUcQ1rUvUIe67cbFkTNIGlt.7gDdU38A7E1+4iFNMZCodBKuCMNOR7lwJp8iUJKrxinOrlNhz2jUkO01f2ENwAd+sQgByMwp.yfnSZrVAhtemG8U5c7xexd2gbEliobOZyryvHikUyW0feQ9rnL7AyZ.RMfvlmI+Kx3dcpN8GI+6kO7j5jK5Ot6ohj0jwckuVuln5p9RPh7BFrUiT4PCb4EuhjhF414qSoperRbVa1JZgYRaLglNSE2fWp8YTEMdWEiEtOdWC691MuYlCroiNydU6Ep30QF4isAcc+Vguf6n8Mtg6OpAqVRO0Cv0jALU5dOz+6NsvVwvInlOMm7XEB.229dvhVc+0sQMdgZmP.WGFyilKlKrqEUvQUPzFYpQqFFDhdKNRsZTYXZqrH2Shel.RP5Q9ApyJ81k7NuBLNgjFV3rtvxx4BlUMmlQOQD1lgkjjqY7pX6C"
 
 const var LottiePanel = Content.getComponent("LottiePanel");

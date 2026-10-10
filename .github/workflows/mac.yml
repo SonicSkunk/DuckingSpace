@@ -116,7 +116,8 @@ jobs:
           IFS=. read -r V1 V2 V3 <<< "$VER"
           VCODE=$(( (${V1:-0} << 16) + (${V2:-0} << 8) + ${V3:-0} ))
           echo "$VER $VCODE" > "$LOGS/version.txt"
-          mkdir -p "$OUT/bundles" "$OUT/zip/DuckingSpace"
+          PKG="DuckingSpace-${VER}-mac"
+          mkdir -p "$OUT/bundles" "$OUT/zip/$PKG"
           cd "$PROJECT_DIR/Binaries/Builds/MacOSX/build/Release"
           for p in *.component; do
             /usr/libexec/PlistBuddy -c "Set :AudioComponents:0:version $VCODE" "$p/Contents/Info.plist"
@@ -125,29 +126,37 @@ jobs:
             codesign --force --deep -s - "$p"
             codesign --verify --deep --strict "$p"
             ditto "$p" "$OUT/bundles/$p"
-            ditto "$p" "$OUT/zip/DuckingSpace/$p"
+            ditto "$p" "$OUT/zip/$PKG/$p"
             lipo -info "$p/Contents/MacOS/"* | tee -a "$LOGS/lipo.txt"
           done
-          cat > "$OUT/zip/DuckingSpace/How to install.txt" <<'EOF'
-          DuckingSpace for Mac - test build
-          ================================
+          cat > "$OUT/zip/$PKG/How to install.txt" <<'EOF'
+          DuckingSpace for Mac
+          ====================
 
           1. Copy DuckingSpace.vst3 into:
              your home folder > Library > Audio > Plug-Ins > VST3
           2. Copy DuckingSpace.component (the AU, for Logic and GarageBand) into:
              your home folder > Library > Audio > Plug-Ins > Components
              (In Finder, choose Go > Go to Folder and type ~/Library/Audio/Plug-Ins)
-          3. This test build has no Apple approval yet, so the Mac blocks it at first.
+          3. DuckingSpace isn't signed by Apple yet, so your Mac blocks it at first.
              Open the Terminal app, paste this line and press Return:
 
              xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/DuckingSpace.vst3 ~/Library/Audio/Plug-Ins/Components/DuckingSpace.component
 
           4. Restart your DAW and rescan plugins. DuckingSpace is listed under Sonic Skunk.
 
+          DuckingSpace is free software under the GNU GPL v3. The license and
+          notices are in the Licenses folder.
+          Source code: https://github.com/SonicSkunk/DuckingSpace
+
           Questions or problems: info@sonicskunk.com
           EOF
+          mkdir -p "$OUT/zip/$PKG/Licenses"
+          cp "$PROJECT_DIR/LICENSE" "$OUT/zip/$PKG/Licenses/LICENSE.txt"
+          cp "$PROJECT_DIR/THIRD-PARTY-NOTICES.txt" "$PROJECT_DIR/Images/Fonts/OFL-DuckSans.txt" "$PROJECT_DIR/Images/Fonts/OFL-DuckMono.txt" "$OUT/zip/$PKG/Licenses/"
           cd "$OUT/zip"
-          ditto -c -k --sequesterRsrc --keepParent DuckingSpace "$OUT/DuckingSpace-${VER}-mac.zip"
+          ditto -c -k --sequesterRsrc --keepParent "$PKG" "$OUT/$PKG.zip"
+          zipinfo "$OUT/$PKG.zip" > "$LOGS/zip.txt"
           ls -la "$OUT" | tee -a "$LOGS/lipo.txt"
 
       - name: Apple AU check
@@ -303,6 +312,7 @@ jobs:
           note "test steps" "auval=${{ steps.auval.outcome }} loadtest=${{ steps.pluginval.outcome }} listen=${{ steps.listen.outcome }}"
           [ -f "$LOGS/lipo.txt" ] && note "arch" "$(grep -h 'Architectures' "$LOGS/lipo.txt" | sed 's/.*are: //' | sort -u | tr '\n' ';')"
           [ -f "$LOGS/version.txt" ] && note "version" "$(cat "$LOGS/version.txt")"
+          [ -f "$LOGS/zip.txt" ] && note "mac zip" "$(awk '{print $1, $NF}' "$LOGS/zip.txt" | awk -F/ 'NF<=3 || /MacOS\/[^\/]+$/' | tr '\n' ';' | cut -c1-1200)"
           [ -f "$LOGS/auval.txt" ] && note "auval" "$(grep -E 'AU VALIDATION|FATAL|ERROR' "$LOGS/auval.txt" | head -3 | tr '\n' ' ')"
           [ -f "$LOGS/auval.txt" ] && note "auval warnings" "$(grep -c 'WARNING' "$LOGS/auval.txt") warning lines: $(grep 'WARNING' "$LOGS/auval.txt" | head -3 | tr '\n' ' ' | cut -c1-600)"
           for f in "$LOGS"/pluginval-*.txt; do

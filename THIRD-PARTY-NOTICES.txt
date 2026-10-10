@@ -25,9 +25,9 @@ Faust libraries (https://faust.grame.fr)
 
 Fonts
   - DuckSans is Barlow Semi Condensed, Copyright 2017 The Barlow Project
-    Authors. SIL Open Font License 1.1 (Images/Fonts/OFL-DuckSans.txt).
+    Authors. SIL Open Font License 1.1 (OFL-DuckSans.txt).
   - DuckMono is JetBrains Mono, Copyright 2020 The JetBrains Mono Project
-    Authors. SIL Open Font License 1.1 (Images/Fonts/OFL-DuckMono.txt).
+    Authors. SIL Open Font License 1.1 (OFL-DuckMono.txt).
 
 
 STK-4.3 license
